@@ -296,7 +296,7 @@ enum AnalyticsHelper {
 #if os(iOS)
     extension AnalyticsHelper {
         static func plusPlanPurchased() {
-            logEvent(AnalyticsEventPurchase)
+            logEvent("purchase")
         }
     }
 

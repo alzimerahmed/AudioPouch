@@ -29,6 +29,8 @@
 		0C52E9EE2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */; };
 		0C52E9F3A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
 		0C52E9F5A7B44D1E00000001 /* ThemeGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */; };
+		0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
+		0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
 		0C7BFA882FAD2A8C00C1E5FF /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF26A9984A1B5C2D00000003 /* LiquidGlass.swift */; };
 		0CAF5067304B019B00E6074E /* DiscoverNetworksGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CAF5066304B019B00E6074E /* DiscoverNetworksGridView.swift */; };
 		0CB804A62FB50B31007D0402 /* PlayerZoomAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB804A52FB50B31007D0402 /* PlayerZoomAnimator.swift */; };
@@ -7417,6 +7419,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F57ABBFC2CECEBD800CC50AF /* ArchiveHelper.swift in Sources */,
+				0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				F5F5094D2CEBF448007D6E39 /* SimpleActionView.swift in Sources */,
 				0C7BFA882FAD2A8C00C1E5FF /* LiquidGlass.swift in Sources */,
 				F5F509292CEBEF09007D6E39 /* TranscriptsDataRetriever.swift in Sources */,
@@ -7540,6 +7543,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF8FFE4C2FAA4BF50086A867 /* DownloadProgressManager.swift in Sources */,
+				0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				FF32F3DB2FAB838900226E58 /* PlaylistDetailFetchOperation.swift in Sources */,
 				FF60249F2FAB458900EB3AD5 /* ThemeStyle.swift in Sources */,
 				FF8FFE522FAA4D110086A867 /* PlaybackCatchUpHelper.swift in Sources */,
