@@ -205,6 +205,32 @@ class StatsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             return
         }
 
+        if FeatureFlag.offlineStats.enabled {
+            // Offline stats (gap #7): local stats (UserDefaults-backed via
+            // StatsManager) are always available, so show them immediately
+            // instead of a spinner. The server sync becomes opportunistic —
+            // if it succeeds the values refresh, if it fails we keep showing
+            // the local data rather than an error state.
+            loadingState = LoadingStatus.loaded
+            reloadSections()
+
+            StatsManager.shared.loadRemoteStats { [weak self] _ in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    self.reloadSections()
+                    self.requestReviewIfPossible()
+                }
+
+                RefreshManager.shared.refreshPodcasts { _ in
+                    DispatchQueue.main.async { [weak self] in
+                        self?.reloadSections()
+                    }
+                }
+            }
+
+            return
+        }
+
         loadingState = LoadingStatus.loading
         reloadSections()
 

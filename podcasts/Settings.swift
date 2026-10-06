@@ -1498,7 +1498,12 @@ class Settings: NSObject {
         }
 
         static var endOfYearRequireAccount: Bool {
-            Constants.RemoteParams.endOfYearRequireAccountDefault
+            // Offline stats (gap #7): End-of-Year works without an account,
+            // stories are built from local listening history.
+            if FeatureFlag.offlineStats.enabled {
+                return false
+            }
+            return Constants.RemoteParams.endOfYearRequireAccountDefault
         }
 
         static var addMissingEpisodes: Bool {

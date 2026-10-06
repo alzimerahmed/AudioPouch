@@ -287,6 +287,26 @@ class EndOfYearStoriesBuilderTests: XCTestCase {
 
         XCTAssertEqual(syncCalledTimes, 1)
     }
+
+    /// Offline stats (gap #7): when the server sync fails (e.g. offline),
+    /// the stories should still be populated from the local listening
+    /// history instead of showing nothing.
+    func testPopulatesFromLocalDataWhenSyncFails() async {
+        let endOfYearManager = EndOfYearManagerMock()
+        let dataManager = DataManagerMock(endOfYearManager: endOfYearManager)
+        let model = EndOfYear2023StoriesModel()
+        let builder = EndOfYearStoriesBuilder(dataManager: dataManager, model: model, sync: { _ in false })
+        Settings.setHasSyncedEpisodesForPlayback(false, year: 2023)
+
+        endOfYearManager.isFullListeningHistoryToReturn = false
+        endOfYearManager.listeningTimeToReturn = 3000
+        await builder.build()
+
+        XCTAssertTrue(model.stories.contains(.listeningTime))
+        XCTAssertEqual(model.data.listeningTime, 3000)
+        // A failed sync must not be recorded as synced
+        XCTAssertFalse(Settings.hasSyncedEpisodesForPlayback(year: 2023))
+    }
 }
 
 private class EpisodeMock: Episode {

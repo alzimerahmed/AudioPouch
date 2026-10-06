@@ -181,7 +181,19 @@ public class StatsManager {
     }
 
     public func statsStartedAt() -> Int64 {
-        Int64(UserDefaults.standard.integer(forKey: ServerConstants.UserDefaults.statsStartedDateServer))
+        let serverDate = Int64(UserDefaults.standard.integer(forKey: ServerConstants.UserDefaults.statsStartedDateServer))
+        if serverDate > 0 {
+            return serverDate
+        }
+
+        // Offline stats (gap #7): without a server-provided start date,
+        // fall back to the local stats start date so the stats screen can
+        // show "listening since" even when never synced.
+        if FeatureFlag.offlineStats.enabled {
+            return Int64(statsStartDate().timeIntervalSince1970)
+        }
+
+        return serverDate
     }
 
     public func statsStartDate() -> Date {

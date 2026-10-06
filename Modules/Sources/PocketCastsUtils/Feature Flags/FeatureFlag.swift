@@ -260,6 +260,10 @@ public enum FeatureFlag: String, CaseIterable {
     /// Enable user-importable theme JSON and the theme gallery
     case importableThemes
 
+    /// Make stats and End-of-Year fully functional offline: local data is shown
+    /// immediately, server sync becomes opportunistic, and no account is required
+    case offlineStats
+
     public var enabled: Bool {
         if let overriddenValue = FeatureFlagOverrideStore().overriddenValue(for: self) {
             return overriddenValue
@@ -357,7 +361,7 @@ public enum FeatureFlag: String, CaseIterable {
         case .enableLocalizationHeaders:
             true
         case .endOfYear2025:
-            false
+            true
         case .endOfYearLoadIsFirstStory:
 			true
         case .effectsPlayerQOSUpgrade:
@@ -441,6 +445,8 @@ public enum FeatureFlag: String, CaseIterable {
         case .accountFreeOnboarding:
             true
         case .importableThemes:
+            true
+        case .offlineStats:
             true
         }
     }

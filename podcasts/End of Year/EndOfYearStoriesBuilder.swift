@@ -35,10 +35,14 @@ class EndOfYearStoriesBuilder {
                 if syncedWithSuccess == true {
                     Settings.setHasSyncedEpisodesForPlayback(true, year: modelType.year)
                     Settings.setHasSyncedEpisodesForPlaybackAsPlusUser(hasActiveSubscription(), year: modelType.year)
-                } else {
+                } else if !FeatureFlag.offlineStats.enabled {
                     continuation.resume()
                     return
                 }
+                // else: offline fallback (offlineStats flag) — the server sync
+                // failed or is unreachable, so we still populate the stories
+                // from whatever local listening history is available instead
+                // of showing blank stories.
             }
 
             model.populate(with: dataManager)
