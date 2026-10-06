@@ -27,6 +27,10 @@
 		0C52E9EA2FFD8D9B00C2B9D1 /* TroubleshootingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9E92FFD8D9B00C2B9D1 /* TroubleshootingViewModel.swift */; };
 		0C52E9EC2FFD8DAD00C2B9D1 /* TroubleshootingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9EB2FFD8DAD00C2B9D1 /* TroubleshootingView.swift */; };
 		0C52E9EE2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */; };
+		0C52E9F3A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
+		0C52E9F5A7B44D1E00000001 /* ThemeGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */; };
+		0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
+		0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
 		0C7BFA882FAD2A8C00C1E5FF /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF26A9984A1B5C2D00000003 /* LiquidGlass.swift */; };
 		0CAF5067304B019B00E6074E /* DiscoverNetworksGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CAF5066304B019B00E6074E /* DiscoverNetworksGridView.swift */; };
 		0CB804A62FB50B31007D0402 /* PlayerZoomAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB804A52FB50B31007D0402 /* PlayerZoomAnimator.swift */; };
@@ -1576,6 +1580,8 @@
 		0C52E9E92FFD8D9B00C2B9D1 /* TroubleshootingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TroubleshootingViewModel.swift; sourceTree = "<group>"; };
 		0C52E9EB2FFD8DAD00C2B9D1 /* TroubleshootingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TroubleshootingView.swift; sourceTree = "<group>"; };
 		0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrphanedEpisodesListView.swift; sourceTree = "<group>"; };
+		0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomThemeManager.swift; sourceTree = "<group>"; };
+		0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeGalleryView.swift; sourceTree = "<group>"; };
 		0CAF5066304B019B00E6074E /* DiscoverNetworksGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverNetworksGridView.swift; sourceTree = "<group>"; };
 		0CB804A52FB50B31007D0402 /* PlayerZoomAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerZoomAnimator.swift; sourceTree = "<group>"; };
 		0CCC37A52FA3C30200BA79D1 /* SmartPlaylistRulesSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPlaylistRulesSectionView.swift; sourceTree = "<group>"; };
@@ -4674,6 +4680,8 @@
 				0C52E9E92FFD8D9B00C2B9D1 /* TroubleshootingViewModel.swift */,
 				0C52E9EB2FFD8DAD00C2B9D1 /* TroubleshootingView.swift */,
 				0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */,
+				0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */,
+				0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */,
 			);
 			name = "Pocket Casts";
 			path = podcasts;
@@ -7025,6 +7033,8 @@
 				BD2BE6791C5B11C20087EE1E /* ShiftyRoundButton.swift in Sources */,
 				4007B04C230E1FB4008DDCF5 /* WhatsNewViewController.swift in Sources */,
 				BD8E76C61B9E9C03000E20C7 /* AppTheme.swift in Sources */,
+				0C52E9F3A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
+				0C52E9F5A7B44D1E00000001 /* ThemeGalleryView.swift in Sources */,
 				BDB1E4FE1B8C5C2B009AD30F /* CategorySummaryViewController.swift in Sources */,
 				BD542C20240382A100F35D26 /* EpisodeFilter+Formatting.swift in Sources */,
 				10A4F7582C52635F0084D783 /* KidsProfileBannerView.swift in Sources */,
@@ -7468,6 +7478,7 @@
 				F5F5094E2CEBF451007D6E39 /* DescriptiveActionView.swift in Sources */,
 				F5D5F7C82CEBE865001F492D /* PlayerTabsView.swift in Sources */,
 				F5F509042CEBEA73007D6E39 /* AppTheme.swift in Sources */,
+				0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				F5F509522CEBF4AC007D6E39 /* Settings.swift in Sources */,
 				F5F509542CEBF5B3007D6E39 /* CustomSegmentedControl.swift in Sources */,
 				F5F509212CEBEDFB007D6E39 /* ImageManager.swift in Sources */,
@@ -7579,6 +7590,7 @@
 				FF8FFE6B2FAA8EA00086A867 /* Chapters.swift in Sources */,
 				FF32F3CE2FAB7F8E00226E58 /* HapticsHelper.swift in Sources */,
 				FF60249D2FAB443300EB3AD5 /* AppTheme.swift in Sources */,
+				0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				FF8FFE452FAA49D90086A867 /* AnalyticsHelper.swift in Sources */,
 				FF8FFE562FAA5FEC0086A867 /* BackgroundShakeObserver.swift in Sources */,
 				FF321A722FACA37900226E58 /* HomeGridItem.swift in Sources */,

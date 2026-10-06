@@ -9,7 +9,7 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
     private let plusLockedInfoCellId = "PlusLockedCell"
 
     private enum TableRow {
-        case themeOption, lightTheme, darkTheme, appIcon, refreshArtwork, embeddedArtwork, plusCallout, darkUpNextTheme, tabBarMinimizing
+        case themeOption, lightTheme, darkTheme, themeGallery, appIcon, refreshArtwork, embeddedArtwork, plusCallout, darkUpNextTheme, tabBarMinimizing
     }
 
     private var tableData = [[TableRow]]()
@@ -127,6 +127,14 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
             cell.cellSecondaryLabel.text = Theme.preferredDarkTheme().description
 
             return cell
+        case .themeGallery:
+            let cell = tableView.dequeueReusableCell(withIdentifier: disclosureCellId, for: indexPath) as! DisclosureCell
+            cell.cellLabel.text = L10n.themeGalleryTitle
+            if let active = CustomThemeManager.shared.activeCustomTheme {
+                cell.cellSecondaryLabel.text = active.name
+            }
+
+            return cell
         case .appIcon:
             let cell = tableView.dequeueReusableCell(withIdentifier: iconSelectorCellId, for: indexPath) as! IconSelectorCell
             cell.delegate = self
@@ -170,6 +178,9 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
             presentThemePicker(selectedTheme: Theme.preferredDarkTheme()) { theme in
                 Theme.setPreferredDarkTheme(theme, systemIsDark: Theme.systemIsDark, userInitiated: true)
             }
+        } else if row == .themeGallery {
+            let gallery = ThemeGalleryView().environmentObject(Theme.shared)
+            present(PCHostingController(rootView: gallery), animated: true, completion: nil)
         }
     }
 
@@ -276,6 +287,11 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
             newTableData = [[.themeOption, .lightTheme, .darkTheme], [.appIcon], [.refreshArtwork, .embeddedArtwork], [.darkUpNextTheme]]
         } else {
             newTableData = [[.themeOption, .lightTheme], [.appIcon], [.refreshArtwork, .embeddedArtwork], [.darkUpNextTheme]]
+        }
+
+        // Theme gallery (user-imported themes) — flag-fenced (Phase 6)
+        if FeatureFlag.importableThemes.enabled, let themeSection = newTableData.firstIndex(where: { $0.contains(.themeOption) }) {
+            newTableData[themeSection].insert(.themeGallery, at: 1)
         }
 
         // The tab bar's minimize-on-scroll behavior only exists on iOS 26's Liquid Glass tab bar.

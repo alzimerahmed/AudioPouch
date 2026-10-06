@@ -6717,3 +6717,45 @@
 
 /* Message shown when a network the user tapped fails to load */
 "network_fail_to_load" = "This network couldn't be loaded";
+
+/* Theme gallery - screen title */
+"theme_gallery_title" = "Theme Gallery";
+
+/* Theme gallery - import button (accessibility label for the import toolbar icon) */
+"theme_gallery_import" = "Import theme file";
+
+/* Theme gallery - section header for user-imported themes */
+"theme_gallery_imported_header" = "Imported";
+
+/* Theme gallery - section header for built-in themes */
+"theme_gallery_builtin_header" = "Built-in";
+
+/* Theme gallery - delete action */
+"theme_gallery_delete" = "Delete";
+
+/* Theme gallery - confirmation message when deleting an imported theme */
+"theme_gallery_delete_confirm_message" = "This theme will be removed from your library. The app will fall back to the built-in theme.";
+
+/* Theme gallery - accessibility label for the checkmark on the active theme */
+"theme_gallery_current" = "Current theme";
+
+/* Theme gallery - generic import error alert title */
+"theme_gallery_error_title" = "Couldn't import theme";
+
+/* Theme gallery - error: file is not valid theme JSON */
+"theme_gallery_invalid_file" = "This file isn't a valid AudioPouch theme file.";
+
+/* Theme gallery - error: schema version not supported */
+"theme_gallery_invalid_version" = "This theme uses an unsupported schema version. Update AudioPouch and try again.";
+
+/* Theme gallery - error: a light/dark palette or a required color token is missing */
+"theme_gallery_missing_colors" = "This theme is missing required colors. It must define a complete light and dark palette.";
+
+/* Theme gallery - error: a color value is not a valid hex color */
+"theme_gallery_invalid_color" = "This theme contains an invalid color value. Colors must be hex like #RRGGBB.";
+
+/* Theme gallery - error: theme name missing or too long */
+"theme_gallery_missing_name" = "This theme needs a name of 40 characters or fewer.";
+
+/* Theme gallery - error: text and background colors are too similar to read */
+"theme_gallery_insufficient_contrast" = "This theme's text and background colors are too similar to be readable.";

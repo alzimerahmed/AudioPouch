@@ -4,10 +4,11 @@ import PocketCastsUtils
 import PocketCastsServer
 
 enum AppTheme {
-    private static let tintColor = UIColor(hex: "#F44336")
+    private static let defaultTintColor = UIColor(hex: "#F44336")
 
     static var appTintColor: UIColor {
-        AppTheme.tintColor
+        // Custom imported themes (Phase 6) can override the accent color.
+        CustomThemeManager.shared.activeAccentColor ?? defaultTintColor
     }
 
     static var placeholderTextColor: UIColor {

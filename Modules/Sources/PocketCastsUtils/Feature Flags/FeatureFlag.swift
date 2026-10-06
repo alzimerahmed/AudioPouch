@@ -257,6 +257,9 @@ public enum FeatureFlag: String, CaseIterable {
     /// recurring encourage-account-creation modal is suppressed
     case accountFreeOnboarding
 
+    /// Enable user-importable theme JSON and the theme gallery
+    case importableThemes
+
     public var enabled: Bool {
         if let overriddenValue = FeatureFlagOverrideStore().overriddenValue(for: self) {
             return overriddenValue
@@ -436,6 +439,8 @@ public enum FeatureFlag: String, CaseIterable {
         case .whatsNewPolls:
             false
         case .accountFreeOnboarding:
+            true
+        case .importableThemes:
             true
         }
     }
