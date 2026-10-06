@@ -13,10 +13,10 @@ struct ThemeGalleryView: View {
     /// Called when a locked (Plus-only) built-in theme is tapped. The
     /// presenter is expected to dismiss the gallery and show the upsell,
     /// matching `ThemeSelectorView`'s gating.
-    var onLockedTheme: () -> Void = {}
+    var onLockedTheme = {}
 
     /// Called by the close button — the presenter dismisses the modal.
-    var dismissAction: () -> Void = {}
+    var dismissAction = {}
 
     @State private var showingImporter = false
     @State private var deleteCandidate: CustomThemeStore.Entry?
