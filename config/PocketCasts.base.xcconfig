@@ -1,0 +1,17 @@
+#include "Version.xcconfig"
+
+SWIFT_VERSION = 5.0
+
+// Map our custom version values (used by the automation tooling) to the values
+// Xcode uses
+MARKETING_VERSION = $(VERSION_SHORT)
+CURRENT_PROJECT_VERSION = $(VERSION_LONG)
+
+// Define a root bundle identifier so that extensions can append to it
+PRODUCT_BUNDLE_IDENTIFIER_ROOT = au.com.shiftyjelly.podcasts
+
+DEVELOPMENT_TEAM = PZYM8XX95Q // AudioPouch
+
+SECRETS_DIR = $(HOME)/.configure/pocketcasts-ios/secrets
+CREDENTIALS_JSON_PATH = $(SECRETS_DIR)/pocket_casts_credentials.json
+GOOGLE_SIGN_IN_SECRETS_PATH = $(SECRETS_DIR)/GoogleSignIn.txt

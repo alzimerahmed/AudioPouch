@@ -1,0 +1,102 @@
+import Foundation
+import PocketCastsUtils
+import UIKit
+
+enum CommonWidgetHelper {
+    static let appGroupId = "group.au.com.shiftyjelly.pocketcasts"
+    static let iconSize: CGFloat = 28
+
+    static func loadAppIconName() -> String {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let appIcon = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.appIcon) as? String else {
+            return "AppIcon-Default"
+        }
+        return appIcon
+    }
+
+    static func loadNowPlayingEpisode() -> WidgetEpisode? {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId),
+              let upNextData = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.upNextItems) as? Data,
+              let firstEpisode = try? JSONDecoder().decode([CommonUpNextItem].self, from: upNextData).first
+        else {
+            return nil
+        }
+
+        return WidgetEpisode(commonItem: firstEpisode)
+    }
+
+    static func loadNowPlayingEpisodes() -> [WidgetEpisode]? {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let upNextData = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.upNextItems) as? Data else {
+            return nil
+        }
+
+        do {
+            let episodes = try JSONDecoder().decode([CommonUpNextItem].self, from: upNextData)
+            return topWidgetEpisodesFrom(episodes)
+        } catch {
+            return nil
+        }
+    }
+
+    static func loadUpNextEpisodesCount() -> Int? {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let upNextCount = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.upNextItemsCount) as? Int else {
+            return nil
+        }
+
+        return upNextCount
+    }
+
+    static func loadTopFilterItems() -> [CommonUpNextItem]? {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let filterData = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.topFilterItems) as? Data else {
+            return nil
+        }
+
+        do {
+            let episodes = try JSONDecoder().decode([CommonUpNextItem].self, from: filterData)
+            return episodes
+        } catch {
+            return nil
+        }
+    }
+
+    static func loadTopFilterEpisodes() -> [WidgetEpisode]? {
+        guard let filterEpisodes = loadTopFilterItems() else { return nil }
+
+        return topWidgetEpisodesFrom(filterEpisodes)
+    }
+
+    static func topWidgetEpisodesFrom(_ commonItems: [CommonUpNextItem]) -> [WidgetEpisode]? {
+        guard !commonItems.isEmpty else { return nil }
+
+        let widgetEpisodes = commonItems.map { WidgetEpisode(commonItem: $0) }
+
+        return Array(widgetEpisodes.prefix(5))
+    }
+
+    static func loadTopFilterName() -> String? {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let filterName = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.topFilterName) as? String else {
+            return nil
+        }
+
+        return filterName
+    }
+
+    static func loadPlayingStatus() -> Bool {
+        guard let sharedDefaults = UserDefaults(suiteName: SharedConstants.GroupUserDefaults.groupContainerId), let playingStatus = sharedDefaults.object(forKey: SharedConstants.GroupUserDefaults.isPlaying) as? Bool else {
+            return false
+        }
+
+        return playingStatus
+    }
+
+    static func url(forEpisodeUuid uuid: String) -> URL? {
+        guard let url = URL(string: "pktc://widget-episode/\(uuid)") else {
+            return nil
+        }
+
+        return url
+    }
+
+    static func durationString(duration: TimeInterval) -> String {
+        TimeFormatter.shared.multipleUnitFormattedShortTime(time: duration)
+    }
+}
