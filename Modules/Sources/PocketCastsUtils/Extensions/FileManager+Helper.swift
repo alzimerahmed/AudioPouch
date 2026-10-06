@@ -10,6 +10,10 @@ extension FileManager {
         return Int64(fileSize)
     }
 
+    public func fileExistsAtURL(_ url: URL) -> Bool {
+        fileExists(atPath: url.path)
+    }
+
     public static var deviceRemainingFreeSpaceInBytes: Int64? {
         let fileURL = URL(fileURLWithPath: NSHomeDirectory() as String)
         do {
