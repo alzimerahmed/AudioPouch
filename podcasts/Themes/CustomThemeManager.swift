@@ -59,15 +59,20 @@ final class CustomThemeManager: ObservableObject {
         return Self.color(fromHex: hex ?? active.accentColor)
     }
 
-    /// Activates a custom theme: sets the base theme type (respecting the
-    /// current dark/light mode) and remembers the active custom theme.
+    /// Activates a custom theme: sets the base theme (the preferred theme for
+    /// the active theme's current darkness) and remembers the active custom
+    /// theme.
     func activate(_ entry: CustomThemeStore.Entry) {
         activeCustomTheme = entry
         defaults.set(entry.id.uuidString, forKey: Self.activeCustomThemeIDKey)
-        let baseType: ThemeType = Theme.isDarkTheme ? .dark : .light
+        let baseType = Self.expectedBaseTheme()
         if Theme.shared.activeTheme != baseType {
             Theme.shared.activeTheme = baseType
         }
+        // The accent can change even when the base theme doesn't — listeners
+        // re-read `activeAccentColor` (via `AppTheme.appTintColor`) off this
+        // notification.
+        NotificationCenter.postOnMainThread(notification: Constants.Notifications.themeChanged)
     }
 
     /// Deactivates any custom theme (used when a built-in theme is applied
@@ -75,6 +80,7 @@ final class CustomThemeManager: ObservableObject {
     func deactivate() {
         activeCustomTheme = nil
         defaults.removeObject(forKey: Self.activeCustomThemeIDKey)
+        NotificationCenter.postOnMainThread(notification: Constants.Notifications.themeChanged)
     }
 
     /// Validates and imports a theme file, refreshing the theme list.
