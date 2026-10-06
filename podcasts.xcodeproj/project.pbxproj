@@ -29,8 +29,6 @@
 		0C52E9EE2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */; };
 		0C52E9F3A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
 		0C52E9F5A7B44D1E00000001 /* ThemeGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */; };
-		0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
-		0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */; };
 		0C7BFA882FAD2A8C00C1E5FF /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF26A9984A1B5C2D00000003 /* LiquidGlass.swift */; };
 		0CAF5067304B019B00E6074E /* DiscoverNetworksGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CAF5066304B019B00E6074E /* DiscoverNetworksGridView.swift */; };
 		0CB804A62FB50B31007D0402 /* PlayerZoomAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB804A52FB50B31007D0402 /* PlayerZoomAnimator.swift */; };
@@ -4680,11 +4678,19 @@
 				0C52E9E92FFD8D9B00C2B9D1 /* TroubleshootingViewModel.swift */,
 				0C52E9EB2FFD8DAD00C2B9D1 /* TroubleshootingView.swift */,
 				0C52E9ED2FFD8DB600C2B9D1 /* OrphanedEpisodesListView.swift */,
-				0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */,
-				0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */,
+				0C52E9FAA7B44D1E00000001 /* Themes */,
 			);
 			name = "Pocket Casts";
 			path = podcasts;
+			sourceTree = "<group>";
+		};
+		0C52E9FAA7B44D1E00000001 /* Themes */ = {
+			isa = PBXGroup;
+			children = (
+				0C52E9F2A7B44D1E00000001 /* CustomThemeManager.swift */,
+				0C52E9F4A7B44D1E00000001 /* ThemeGalleryView.swift */,
+			);
+			path = Themes;
 			sourceTree = "<group>";
 		};
 		BDBD53F817019B2A0048C8C5 /* Supporting Files */ = {
@@ -7478,7 +7484,6 @@
 				F5F5094E2CEBF451007D6E39 /* DescriptiveActionView.swift in Sources */,
 				F5D5F7C82CEBE865001F492D /* PlayerTabsView.swift in Sources */,
 				F5F509042CEBEA73007D6E39 /* AppTheme.swift in Sources */,
-				0C52E9F7A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				F5F509522CEBF4AC007D6E39 /* Settings.swift in Sources */,
 				F5F509542CEBF5B3007D6E39 /* CustomSegmentedControl.swift in Sources */,
 				F5F509212CEBEDFB007D6E39 /* ImageManager.swift in Sources */,
@@ -7590,7 +7595,6 @@
 				FF8FFE6B2FAA8EA00086A867 /* Chapters.swift in Sources */,
 				FF32F3CE2FAB7F8E00226E58 /* HapticsHelper.swift in Sources */,
 				FF60249D2FAB443300EB3AD5 /* AppTheme.swift in Sources */,
-				0C52E9F9A7B44D1E00000001 /* CustomThemeManager.swift in Sources */,
 				FF8FFE452FAA49D90086A867 /* AnalyticsHelper.swift in Sources */,
 				FF8FFE562FAA5FEC0086A867 /* BackgroundShakeObserver.swift in Sources */,
 				FF321A722FACA37900226E58 /* HomeGridItem.swift in Sources */,
