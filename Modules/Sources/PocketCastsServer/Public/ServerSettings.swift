@@ -416,5 +416,3 @@ public extension ServerSettings {
         KeychainHelper.save(string: newValue, key: ServerConstants.Values.refreshTokenKey, accessibility: kSecAttrAccessibleAfterFirstUnlock)
     }
 }
-
-

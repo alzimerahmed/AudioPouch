@@ -30,16 +30,16 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
 
     func getComplicationDescriptors(handler: @escaping ([CLKComplicationDescriptor]) -> Void) {
         let descriptors = [CLKComplicationDescriptor(identifier: "complication", displayName: "AudioPouch", supportedFamilies: [.circularSmall,
-                                                                                                                                  .extraLarge,
-                                                                                                                                  .graphicBezel,
-                                                                                                                                  .graphicCircular,
-                                                                                                                                  .graphicCorner,
-                                                                                                                                  .graphicRectangular,
-                                                                                                                                  .modularLarge,
-                                                                                                                                  .modularSmall,
-                                                                                                                                  .utilitarianLarge,
-                                                                                                                                  .utilitarianSmall,
-                                                                                                                                  .utilitarianSmallFlat])]
+                                                                                                                                .extraLarge,
+                                                                                                                                .graphicBezel,
+                                                                                                                                .graphicCircular,
+                                                                                                                                .graphicCorner,
+                                                                                                                                .graphicRectangular,
+                                                                                                                                .modularLarge,
+                                                                                                                                .modularSmall,
+                                                                                                                                .utilitarianLarge,
+                                                                                                                                .utilitarianSmall,
+                                                                                                                                .utilitarianSmallFlat])]
         handler(descriptors)
     }
 
