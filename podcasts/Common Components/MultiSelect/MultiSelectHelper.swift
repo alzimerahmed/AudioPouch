@@ -1,0 +1,433 @@
+import Foundation
+@preconcurrency import PocketCastsDataModel
+import PocketCastsServer
+import PocketCastsUtils
+import UIKit
+
+@MainActor
+enum MultiSelectHelper {
+    // MARK: - Action Helpers
+
+    static func performAction(_ action: MultiSelectAction, actionDelegate: MultiSelectActionDelegate, view: UIView? = nil) {
+        AnalyticsEpisodeHelper.shared.currentSource = actionDelegate.multiSelectViewSource
+
+        switch action {
+        case .star:
+            starEpisodes(actionDelegate: actionDelegate, star: true)
+        case .unstar:
+            starEpisodes(actionDelegate: actionDelegate, star: false)
+        case .archive:
+            archiveEpisodes(actionDelegate: actionDelegate)
+        case .unarchive:
+            unarchiveEpisodes(actionDelegate: actionDelegate)
+        case .playNext:
+            playEpisodes(actionDelegate: actionDelegate, toTop: true)
+        case .playLast:
+            playEpisodes(actionDelegate: actionDelegate, toTop: false)
+        case .markAsPlayed:
+            markAsPlayedEpisodes(actionDelegate: actionDelegate)
+        case .markAsUnplayed:
+            markAsUnplayedEpisodes(actionDelegate: actionDelegate)
+        case .download:
+            downloadOrQueueEpisodes(actionDelegate: actionDelegate)
+        case .removeDownload:
+            removeDownload(actionDelegate: actionDelegate)
+        case .moveToTop:
+            moveToTop(actionDelegate: actionDelegate)
+        case .moveToBottom:
+            moveToBottom(actionDelegate: actionDelegate)
+        case .removeFromUpNext:
+            removeFromUpNext(actionDelegate: actionDelegate)
+        case .delete:
+            delete(actionDelegate: actionDelegate)
+        case .share:
+            share(actionDelegate: actionDelegate, view: view)
+        case .removeListeningHistory:
+            removeListeningHistory(actionDelegate: actionDelegate)
+        case .addToPlaylist:
+            addToPlaylist(actionDelegate: actionDelegate)
+        }
+    }
+
+    private static func starEpisodes(actionDelegate: MultiSelectActionDelegate, star: Bool) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes().compactMap { $0 as? Episode }
+        if star {
+            let status = selectedEpisodes.count == 1 ? L10n.multiSelectStarringEpisodesSingular : L10n.multiSelectStarringEpisodesPluralFormat(selectedEpisodes.count.localized())
+            actionDelegate.multiSelectActionBegan(status: status)
+        } else {
+            let status = selectedEpisodes.count == 1 ? L10n.multiSelectUnstarringEpisodesSingular : L10n.multiSelectUnstarringEpisodesPluralFormat(selectedEpisodes.count.localized())
+            actionDelegate.multiSelectActionBegan(status: status)
+        }
+        Task.detached {
+            EpisodeManager.bulkSetStarred(star, episodes: selectedEpisodes, updateSyncStatus: SyncManager.isUserLoggedIn())
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func deleteFileMessage(_ count: Int) -> String {
+        count == 1 ? L10n.multiSelectDeleteFileMessageSingular : L10n.multiSelectDeleteFileMessagePlural(count.localized())
+    }
+
+    private static func delete(actionDelegate: MultiSelectActionDelegate) {
+        guard let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes() as? [UserEpisode] else { return }
+
+        let downloadedEpisodes = selectedEpisodes.filter { $0.downloaded(pathFinder: DownloadManager.shared) }
+        let uploadedEpisodes = selectedEpisodes.filter { $0.uploaded() }
+
+        let alert: UIAlertController
+        if downloadedEpisodes.isEmpty {
+            alert = UIAlertController(title: L10n.deleteFromCloud, message: deleteFileMessage(uploadedEpisodes.count), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: L10n.deleteFromCloud, style: .destructive) { _ in
+                Task.detached {
+                    for episode in uploadedEpisodes {
+                        UserEpisodeManager.deleteFromCloud(episode: episode)
+                    }
+                    await actionDelegate.multiSelectActionCompleted()
+                }
+            })
+        } else if uploadedEpisodes.isEmpty {
+            alert = UIAlertController(title: L10n.deleteFromDevice, message: deleteFileMessage(downloadedEpisodes.count), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: L10n.deleteFromDeviceOnly, style: .destructive) { _ in
+                Task.detached {
+                    for episode in downloadedEpisodes {
+                        UserEpisodeManager.deleteFromDevice(userEpisode: episode)
+                    }
+                    await actionDelegate.multiSelectActionCompleted()
+                }
+            })
+        } else {
+            alert = UIAlertController(title: L10n.deleteFile, message: deleteFileMessage(downloadedEpisodes.count), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: L10n.deleteFromDeviceOnly, style: .default) { _ in
+                Task.detached {
+                    for episode in downloadedEpisodes {
+                        UserEpisodeManager.deleteFromDevice(userEpisode: episode)
+                    }
+                    await actionDelegate.multiSelectActionCompleted()
+                }
+            })
+            alert.addAction(UIAlertAction(title: L10n.deleteEverywhere, style: .destructive) { _ in
+                Task.detached {
+                    for episode in selectedEpisodes {
+                        UserEpisodeManager.deleteFromEverywhere(userEpisode: episode)
+                    }
+                    await actionDelegate.multiSelectActionCompleted()
+                }
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+        actionDelegate.multiSelectPresentingViewController().present(alert, animated: true)
+    }
+
+    private static func archiveEpisodes(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes().compactMap { $0 as? Episode }
+        let selectedUserEpisodes = actionDelegate.multiSelectedBaseEpisodes().compactMap { $0 as? UserEpisode }
+        let status = selectedEpisodes.count == 1 ? L10n.multiSelectArchivingEpisodesSingular : L10n.multiSelectArchivingEpisodesPluralFormat(selectedEpisodes.count.localized())
+        actionDelegate.multiSelectActionBegan(status: status)
+        Task.detached {
+            EpisodeManager.bulkArchive(episodes: selectedEpisodes, removeFromPlayer: true, updateSyncFlag: SyncManager.isUserLoggedIn())
+            EpisodeManager.bulkMarkAsPlayed(episodes: selectedUserEpisodes, updateSyncFlag: SyncManager.isUserLoggedIn())
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func unarchiveEpisodes(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes().compactMap { $0 as? Episode }
+        let status = selectedEpisodes.count == 1 ? L10n.multiSelectUnarchivingEpisodesSingular : L10n.multiSelectUnarchivingEpisodesPluralFormat(selectedEpisodes.count.localized())
+        actionDelegate.multiSelectActionBegan(status: status)
+        Task.detached {
+            EpisodeManager.bulkUnarchive(episodes: selectedEpisodes)
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func playEpisodes(actionDelegate: MultiSelectActionDelegate, toTop: Bool) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        var episodesToAdd = selectedEpisodes
+        let statusTime = Date()
+        var showDelayedCompletionMessage = false
+        let bulkAddLimit = ServerSettings.autoAddToUpNextLimit()
+        if selectedEpisodes.count > bulkAddLimit {
+            episodesToAdd = Array(selectedEpisodes[0 ..< bulkAddLimit])
+            showDelayedCompletionMessage = true
+            let status = L10n.multiSelectAddEpisodesMaxFormat(bulkAddLimit.localized())
+            actionDelegate.multiSelectActionBegan(status: status)
+        } else {
+            let status = selectedEpisodes.count == 1 ? L10n.multiSelectAddingEpisodesSingular : L10n.multiSelectAddingEpisodesPluralFormat(selectedEpisodes.count.localized())
+            actionDelegate.multiSelectActionBegan(status: status)
+        }
+        Task.detached {
+            PlaybackManager.shared.bulkAdd(episodesToAdd, toTop: toTop)
+            if showDelayedCompletionMessage {
+                let timeSinceStatusDisplayed = 0 - statusTime.timeIntervalSinceNow
+                if timeSinceStatusDisplayed < Constants.Animation.multiSelectStatusDelayTime {
+                    let delay = Constants.Animation.multiSelectStatusDelayTime - timeSinceStatusDisplayed
+                    try? await Task.sleep(for: .seconds(delay))
+                }
+            }
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func markAsPlayedEpisodes(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        let status = selectedEpisodes.count == 1 ? L10n.multiSelectMarkEpisodesPlayedSingular : L10n.multiSelectMarkEpisodesPlayedPluralFormat(selectedEpisodes.count.localized())
+        actionDelegate.multiSelectActionBegan(status: status)
+
+        Task.detached {
+            EpisodeManager.bulkMarkAsPlayed(episodes: selectedEpisodes, updateSyncFlag: SyncManager.isUserLoggedIn())
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func markAsUnplayedEpisodes(actionDelegate: MultiSelectActionDelegate) {
+        let selectedArchiveEpisodes = actionDelegate.multiSelectedBaseEpisodes().compactMap { $0 as? Episode }
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        let status = selectedEpisodes.count == 1 ? L10n.multiSelectMarkEpisodesUnplayedSingular : L10n.multiSelectMarkEpisodesUnplayedPluralFormat(selectedEpisodes.count.localized())
+        actionDelegate.multiSelectActionBegan(status: status)
+
+        Task.detached {
+            EpisodeManager.bulkMarkAsUnPlayed(selectedEpisodes)
+            EpisodeManager.bulkUnarchive(episodes: selectedArchiveEpisodes)
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func downloadOrQueueEpisodes(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+
+        let downloadableEpisodes = selectedEpisodes.filter { !$0.downloading() && !$0.queued() && !$0.downloaded(pathFinder: DownloadManager.shared) }
+
+        let downloadableCount = downloadableEpisodes.count
+        let downloadLimitExceeded = downloadableCount > Constants.Limits.maxBulkDownloads
+        let actualDownloadCount = downloadLimitExceeded ? Constants.Limits.maxBulkDownloads : downloadableCount
+        if actualDownloadCount == 0 {
+            actionDelegate.multiSelectActionCompleted()
+            return
+        }
+
+        let downloadText = L10n.downloadCountPrompt(selectedEpisodes.count).localizedCapitalized
+        let downloadAction = OptionAction(label: downloadText, icon: nil) {
+            MultiSelectHelper.downloadEpisodes(downloadableEpisodes, actionDelegate: actionDelegate)
+            actionDelegate.multiSelectActionCompleted()
+        }
+
+        let confirmPicker = OptionsPicker(title: nil)
+        var warningMessage = downloadLimitExceeded ? L10n.bulkDownloadMax : ""
+
+        if NetworkUtils.shared.isConnectedToUnexpensiveConnection() {
+            if downloadableCount < 5 {
+                let status = L10n.multiSelectDownloadingEpisodesFormat(selectedEpisodes.count.localized())
+                actionDelegate.multiSelectActionBegan(status: status)
+                MultiSelectHelper.downloadEpisodes(downloadableEpisodes, actionDelegate: actionDelegate)
+                return
+            } else {
+                confirmPicker.addDescriptiveActions(title: L10n.download, message: warningMessage, icon: "filter_downloaded", actions: [downloadAction])
+            }
+        } else {
+            let queueAction = OptionAction(label: L10n.queueForLater, icon: nil) {
+                let status = L10n.multiSelectQueuingEpisodesFormat(selectedEpisodes.count.localized())
+                actionDelegate.multiSelectActionBegan(status: status)
+                queueEpisodes(downloadableEpisodes, actionDelegate: actionDelegate)
+            }
+            queueAction.outline = true
+
+            if !Settings.mobileDataAllowed() {
+                warningMessage = L10n.downloadDataWarningWithSettingsLink("pktc://settings/storage-and-data") + "\n" + warningMessage
+            }
+
+            confirmPicker.addAttributedDescriptiveActions(title: L10n.notOnWifi, message: warningMessage, icon: "option-alert", actions: [downloadAction, queueAction])
+        }
+
+        confirmPicker.present()
+    }
+
+    private static func downloadEpisodes(_ episodes: [BaseEpisode], actionDelegate: MultiSelectActionDelegate) {
+        Task.detached {
+            var queuedEpisodes = 0
+            for episode in episodes {
+                DownloadManager.shared.addToQueue(episodeUuid: episode.uuid, fireNotification: true, autoDownloadStatus: .notSpecified)
+                queuedEpisodes += 1
+                if queuedEpisodes == Constants.Limits.maxBulkDownloads {
+                    return
+                }
+            }
+            await actionDelegate.multiSelectActionCompleted()
+        }
+
+        AnalyticsEpisodeHelper.shared.bulkDownloadEpisodes(episodes: episodes)
+    }
+
+    private static func queueEpisodes(_ episodes: [BaseEpisode], actionDelegate: MultiSelectActionDelegate) {
+        Task.detached {
+            var queuedEpisodes = 0
+            for episode in episodes {
+                DownloadManager.shared.queueForLaterDownload(episodeUuid: episode.uuid, fireNotification: true, autoDownloadStatus: .notSpecified)
+                queuedEpisodes += 1
+                if queuedEpisodes == Constants.Limits.maxBulkDownloads {
+                    return
+                }
+            }
+            await actionDelegate.multiSelectActionCompleted()
+        }
+
+        AnalyticsEpisodeHelper.shared.bulkDownloadEpisodes(episodes: episodes)
+    }
+
+    private static func removeDownload(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        let status = selectedEpisodes.count == 1 ? L10n.multiSelectRemoveDownloadSingular : L10n.multiSelectRemoveDownloadsPluralFormat(selectedEpisodes.count.localized())
+        actionDelegate.multiSelectActionBegan(status: status)
+
+        Task.detached {
+            EpisodeManager.removeDownload(for: selectedEpisodes)
+            await actionDelegate.multiSelectActionCompleted()
+        }
+    }
+
+    private static func moveToTop(actionDelegate: MultiSelectActionDelegate) {
+        guard let selectedPlayListEpisodes = actionDelegate.multiSelectedPlayListEpisodes() else {
+            actionDelegate.multiSelectActionCompleted()
+            return
+        }
+        PlaybackManager.shared.queue.bulkMove(selectedPlayListEpisodes, toTop: true)
+        actionDelegate.multiSelectActionCompleted()
+    }
+
+    private static func moveToBottom(actionDelegate: MultiSelectActionDelegate) {
+        guard let selectedPlayListEpisodes = actionDelegate.multiSelectedPlayListEpisodes() else {
+            actionDelegate.multiSelectActionCompleted()
+            return
+        }
+        PlaybackManager.shared.queue.bulkMove(selectedPlayListEpisodes, toTop: false)
+        actionDelegate.multiSelectActionCompleted()
+    }
+
+    private static func removeFromUpNext(actionDelegate: MultiSelectActionDelegate) {
+        let selectedUuids: [String]
+        if let playlistUuids = actionDelegate.multiSelectedPlayListEpisodes()?.map(\.episodeUuid) {
+            selectedUuids = playlistUuids
+        } else {
+            // Outside the Up Next screen there are no playlist episodes, so fall back to
+            // the selected episodes that are currently queued.
+            selectedUuids = actionDelegate.multiSelectedBaseEpisodes()
+                .filter { PlaybackManager.shared.inUpNext(episode: $0) }
+                .map(\.uuid)
+        }
+        PlaybackManager.shared.bulkRemoveQueued(uuids: selectedUuids)
+        actionDelegate.multiSelectActionCompleted()
+    }
+
+    private static func share(actionDelegate: MultiSelectActionDelegate, view: UIView?) {
+        guard let episode = actionDelegate.multiSelectedBaseEpisodes().first as? Episode else {
+            return
+        }
+
+        guard let sourceView = view ?? actionDelegate.multiSelectPresentingViewController().view else {
+            return
+        }
+
+        SharingHelper.shared.shareLinkTo(episode: episode,
+                                         shareTime: 0,
+                                         fromController: actionDelegate.multiSelectPresentingViewController(),
+                                         sourceRect: sourceView.bounds,
+                                         sourceView: sourceView,
+                                         showArrow: view != nil,
+                                         fromSource: .multiSelect
+        )
+    }
+
+    private static func addToPlaylist(actionDelegate: MultiSelectActionDelegate) {
+        let allSelected = actionDelegate.multiSelectedBaseEpisodes()
+        let episodes = allSelected.compactMap { $0 as? Episode }
+
+        // Check if any files (user episodes) are in the selection
+        let containsFiles = allSelected.contains { $0 is UserEpisode }
+        if containsFiles {
+            Toast.show(L10n.playlistManualAddFilesNotSupportedToast)
+            return
+        }
+
+        guard !episodes.isEmpty else { return }
+
+        let maxPlaylistItems = Constants.Limits.maxFilterItems
+        if episodes.count > maxPlaylistItems {
+            Toast.show(L10n.playlistManualAddTooManyEpisodesToast(maxPlaylistItems.localized(.decimal)))
+            return
+        }
+
+        let presentingVC = actionDelegate.multiSelectPresentingViewController()
+        let chooser = ManualPlaylistsChooserViewController(episodes: episodes, analyticsSource: "multi_select")
+        let navController = UINavigationController(rootViewController: chooser)
+        presentingVC.present(navController, animated: true)
+    }
+
+    private static func removeListeningHistory(actionDelegate: MultiSelectActionDelegate) {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        EpisodeManager.removeListeningHistory(episodes: selectedEpisodes)
+        actionDelegate.multiSelectActionCompleted()
+    }
+
+
+    // MARK: - Selection Helpers
+
+    static func shouldSelectAll(onCount: Int, totalCount: Int) -> Bool {
+        onCount < totalCount
+    }
+
+    // MARK: - Inverse Actions
+
+    static func starredAction(actionDelegate: MultiSelectActionDelegate) -> MultiSelectAction {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        for baseEpisode in selectedEpisodes {
+            if let episode = baseEpisode as? Episode, !episode.keepEpisode {
+                return .star
+            }
+        }
+        return .unstar
+    }
+
+    static func archiveAction(actionDelegate: MultiSelectActionDelegate) -> MultiSelectAction {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        for baseEpisode in selectedEpisodes {
+            if let episode = baseEpisode as? Episode, !episode.archived {
+                return .archive
+            }
+        }
+        return .unarchive
+    }
+
+    static func downloadAction(actionDelegate: MultiSelectActionDelegate) -> MultiSelectAction {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+
+        for episode in selectedEpisodes {
+            if !episode.downloaded(pathFinder: DownloadManager.shared) {
+                return .download
+            }
+        }
+        return .removeDownload
+    }
+
+    static func markAsPlayedAction(actionDelegate: MultiSelectActionDelegate) -> MultiSelectAction {
+        let selectedEpisodes = actionDelegate.multiSelectedBaseEpisodes()
+        for episode in selectedEpisodes {
+            if !episode.played() {
+                return .markAsPlayed
+            }
+        }
+        return .markAsUnplayed
+    }
+
+    static func invertActionIfRequired(action: MultiSelectAction, actionDelegate: MultiSelectActionDelegate) -> MultiSelectAction {
+        if action == .star {
+            return MultiSelectHelper.starredAction(actionDelegate: actionDelegate)
+        } else if action == .archive {
+            return MultiSelectHelper.archiveAction(actionDelegate: actionDelegate)
+        } else if action == .download {
+            return MultiSelectHelper.downloadAction(actionDelegate: actionDelegate)
+        } else if action == .markAsPlayed {
+            return MultiSelectHelper.markAsPlayedAction(actionDelegate: actionDelegate)
+        }
+        return action
+    }
+}

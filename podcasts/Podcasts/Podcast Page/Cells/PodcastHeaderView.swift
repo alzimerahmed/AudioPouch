@@ -1,0 +1,358 @@
+import Foundation
+import PocketCastsDataModel
+import SwiftUI
+import PocketCastsUtils
+
+struct PodcastBlurHeaderView: View {
+
+    let podcastUUID: String
+
+    var body: some View {
+        GeometryReader { proxy in
+            HStack {
+                Spacer()
+                PodcastImageViewWrapper(podcastUUID: podcastUUID, size: .grid)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                .blur(radius: 60)
+                Spacer()
+            }
+        }
+    }
+}
+
+struct PodcastHeaderView: View {
+
+    enum Constants {
+        static let largeImageSize: CGFloat = 192
+        static let smallImageSize: CGFloat = 108
+    }
+
+    @EnvironmentObject var theme: Theme
+    @ObservedObject var viewModel: PodcastHeaderViewModel
+
+    @State private var contentHeight: CGFloat = RichExpandableLabel.estimateHeightFor(maxLines: 3, lineHeightMultiple: 1.4, font: UIFont.preferredFont(forTextStyle: .body))
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: titleBottomMargin)
+            HStack(alignment: .top) {
+                Spacer()
+                PodcastImageViewWrapper(podcastUUID: viewModel.podcast.uuid, size: .detail)
+                    .frame(width: viewModel.isExpanded ? Constants.largeImageSize : Constants.smallImageSize, height: viewModel.isExpanded ? Constants.largeImageSize : Constants.smallImageSize)
+                    .onTapGesture {
+                        withAnimation(.interpolatingSpring(stiffness: 100, damping: 15)) {
+                            viewModel.toggleExpanded()
+                        }
+                    }
+                    .onLongPressGesture {
+                        viewModel.podcastArtworkTapped()
+                    }
+                Spacer()
+            }
+            VStack(spacing: 0) {
+                Spacer().frame(height: itemMargin)
+                podcastCategory
+            }
+                .frame(maxHeight: viewModel.isExpanded ? .infinity : 0)
+                .opacity(viewModel.isExpanded ? 1 : 0)
+                .clipped()
+            Spacer().frame(height: topMarginForTitle)
+            podcastTitle
+            Spacer().frame(height: titleBottomMargin - bottomMarginAdjustmentForTitle)
+            StarRatingView(viewModel: viewModel.podcastRatingViewModel,
+                           style: .short,
+                           onRate: {
+                viewModel.podcastRatingViewModel.update(podcast: viewModel.podcast, ignoringCache: true)
+            })
+            Spacer().frame(height: titleBottomMargin)
+            podcastActions
+            Spacer().frame(height: itemMargin)
+            VStack(spacing: titleBottomMargin) {
+                podcastDescription
+                podcastDetails
+                Spacer().frame(height: itemMargin)
+            }
+                .frame(maxHeight: viewModel.isExpanded ? .infinity : 0)
+                .opacity(viewModel.isExpanded ? 1 : 0)
+                .clipped()
+            PodcastDetailsTabView(delegate: viewModel.delegate)
+        }
+        .padding(.horizontal, 16)
+    }
+
+    func makeText() -> Text {
+        var output = Text(viewModel.displayCategoryAndAuthor(networkTint: networkTint))
+        if FeatureFlag.showExplicitBadges.enabled, viewModel.podcast.isExplicit {
+            output = output + ExplicitBadgeHelper.inlineTitle(" ·", isExplicit: true, theme: theme.activeTheme)
+        }
+        return output
+    }
+
+    private var podcastCategory: some View {
+        VStack {
+                makeText()
+                .font(.footnote)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(theme.primaryText01)
+            .tint(theme.primaryText01)
+            .environment(\.openURL, OpenURLAction { url in
+                viewModel.headerLinkTapped(url)
+                return .handled
+            })
+        }
+    }
+
+    /// The podcast's own colour, which is what marks the author as leading to its network.
+    private var networkTint: Color {
+        Color(viewModel.podcast.iconTintColor(for: theme.activeTheme))
+    }
+
+    /// The details row's author is drawn in `networkTint` when it leads to the podcast's network,
+    /// the same place the header's author does, and left as plain text when it doesn't.
+    private var authorTint: Color? {
+        viewModel.networkListId == nil ? nil : networkTint
+    }
+
+    var topMarginForTitle: CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .title2)
+        let adjustment =  font.lineHeight - font.capHeight + font.descender
+        return (viewModel.isExpanded ? 18 : 26) - adjustment
+    }
+
+    var bottomMarginAdjustmentForTitle: CGFloat {
+        let font = UIFont.preferredFont(forTextStyle: .title2)
+        return -font.descender
+    }
+
+    @ScaledMetric(relativeTo: .body) private var titleBottomMargin = 16
+    @ScaledMetric(relativeTo: .largeTitle) private var itemMargin = 24
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize = 24
+    @ScaledMetric(relativeTo: .largeTitle) private var iconRounding = 32
+
+    private var podcastTitle: some View {
+        HStack(spacing: 0) {
+            Text(viewModel.podcast.title ?? "")
+                .font(.title2).bold()
+                .fixedSize(horizontal: false, vertical: true)
+            Image("chevron-small-down")
+                .resizable()
+                .renderingMode(.template)
+                .frame(width: itemMargin, height: itemMargin)
+                .padding(.horizontal, 4)
+                .rotationEffect(.degrees(viewModel.isExpanded ? 180 : 0))
+                .contentShape(Rectangle())
+        }
+        .foregroundStyle(theme.primaryText01)
+        .multilineTextAlignment(.center)
+        .onTapGesture {
+            withAnimation(.interpolatingSpring(stiffness: 100, damping: 15)) {
+                viewModel.toggleExpanded()
+            }
+        }
+    }
+
+    private var followButton: some View {
+        Button() {
+            withAnimation {
+                viewModel.subscribeButtonTapped()
+            }
+        } label: {
+            Text(viewModel.isSubscribed ? "" : L10n.follow)
+                .font(.body).bold()
+                .foregroundStyle(theme.primaryText01)
+                .padding()
+                .cornerRadius(viewModel.isSubscribed ? 8 : iconRounding)
+                .frame(minWidth: viewModel.isSubscribed ? iconRounding : viewModel.podcast.fundingURL != nil ? 118 : 150, maxWidth: viewModel.isSubscribed ? iconRounding : nil, minHeight: viewModel.isSubscribed ? iconRounding : iconRounding + 2, maxHeight: viewModel.isSubscribed ? iconRounding : iconRounding + 2)
+                .background {
+                    Image("discover_tick")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .background(theme.support02)
+                        .foregroundStyle(theme.primaryUi01)
+                        .frame(width: iconSize, height: iconSize)
+                        .clipShape(Circle())
+                        .opacity(viewModel.isSubscribed ? 1 : 0)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: viewModel.isSubscribed ? iconRounding : 8)
+                    .inset(by: 0.5)
+                    .stroke(theme.primaryUi05, lineWidth: 1)
+                    .opacity(viewModel.isSubscribed ? 0 : 1)
+                )
+                .clipped()
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(viewModel.isSubscribed ? L10n.unfollow : L10n.follow)
+    }
+
+    private var fundingButton: some View {
+        Button {
+            viewModel.delegate?.fundingTapped()
+        } label: {
+            if !viewModel.isSubscribed {
+                // Unsubscribed state - larger button next to Follow
+                fundingImage(width: iconSize, height: iconSize, padding: 10.0)
+                    .frame(width: iconRounding + 2, height: iconRounding + 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .inset(by: 0.5)
+                            .stroke(theme.primaryUi05, lineWidth: 1)
+                    )
+            } else {
+                // Subscribed state - compact button with other actions
+                fundingImage(width: iconSize, height: iconSize, padding: 8.0)
+            }
+        }
+        .accessibilityLabel(L10n.funding)
+        .buttonStyle(.plain)
+    }
+
+    private func fundingImage(width: CGFloat, height: CGFloat, padding: CGFloat) -> some View {
+        return Image("podcast-funding")
+            .renderingMode(.template)
+            .resizable()
+            .frame(width: width, height: height)
+            .padding(padding)
+            .foregroundStyle(theme.primaryIcon03)
+    }
+
+    private var podcastActions: some View {
+        HStack(spacing: 0) {
+            Spacer()
+            followButton
+            if !viewModel.isSubscribed, let _ = viewModel.podcast.fundingURL {
+                Spacer().frame(width: 8)
+                fundingButton
+            }
+            if viewModel.isSubscribed {
+                Spacer().frame(width: 8)
+                actionButton(title: L10n.folder, imageName: viewModel.folderImage) {
+                    viewModel.delegate?.folderTapped()
+                }
+                actionButton(title: viewModel.podcast.pushEnabled ? L10n.notificationsOn : L10n.notificationsOff, imageName: viewModel.podcast.pushEnabled ? "podcast-notification-on" : "podcast-notification-off") {
+                    viewModel.delegate?.notificationTapped()
+                }
+                if let _ = viewModel.podcast.fundingURL {
+                    fundingButton
+                }
+                actionButton(title: L10n.settings, imageName: "podcast-settings") {
+                    viewModel.delegate?.settingsTapped()
+                }
+            }
+            Spacer()
+        }
+    }
+
+    private func actionButton(title: String, imageName: String, action: @escaping ()->()) -> some View {
+        Button {
+            action()
+        } label: {
+            Image(imageName)
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: iconSize, height: iconSize)
+                .padding(8)
+                .foregroundStyle(theme.primaryIcon03)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+    }
+
+    private var podcastDescription: some View {
+        PodcastHeaderDescriptionView(htmlDescription: viewModel.htmlDescription, delegate: viewModel) { newHeight in
+            DispatchQueue.main.async {
+                contentHeight = newHeight
+            }
+        }
+        .frame(height: contentHeight)
+        .animation(.easeInOut(duration: 0.1), value: contentHeight)
+    }
+
+    private var podcastDetails: some View {
+        VStack(alignment: .leading) {
+            if let displayAuthor = viewModel.displayAuthor {
+                infoLabel(displayAuthor, imageName: "podcast-author", linkTint: authorTint, action: authorTint == nil ? nil : { viewModel.networkTapped() })
+            }
+            if let displayWebsite = viewModel.displayWebsite {
+                infoLabel(displayWebsite, imageName: "podcast-link", linkTint: networkTint) {
+                    viewModel.websiteLinkTapped()
+                }
+            }
+            if let displayFrequency = viewModel.displayFrequency {
+                infoLabel(displayFrequency, imageName: "podcast-schedule")
+            }
+            if let displayNextEpisodeDate = viewModel.displayNextEpisodeDate {
+                infoLabel(displayNextEpisodeDate, imageName: "podcast-nextepisode")
+            }
+        }
+        .padding()
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .inset(by: 0.5)
+                .stroke(theme.primaryUi05, lineWidth: 1)
+        )
+    }
+
+    /// A row of the details box. `linkTint` colours the text and makes the row tappable; a row
+    /// without one is plain text.
+    private func infoLabel(_ label: String, imageName: String, linkTint: Color? = nil, action: (() -> Void)? = nil) -> some View {
+        HStack {
+            Image(imageName)
+                .resizable()
+                .frame(width: iconSize, height: iconSize)
+                .foregroundStyle(theme.primaryIcon02)
+            Text(label)
+                .foregroundStyle(linkTint ?? theme.primaryText01)
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            action?()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(linkTint == nil ? [] : .isButton)
+        .allowsHitTesting(action != nil)
+    }
+}
+
+struct PodcastHeaderView_Previews: PreviewProvider {
+    struct PreviewContainerView: View {
+        @EnvironmentObject var theme: Theme
+
+        static func makePodcast() -> Podcast {
+            let podcast = Podcast()
+            podcast.title = "Test Podcast"
+            podcast.podcastCategory = "Test"
+            podcast.author = "Test Author"
+            podcast.estimatedNextEpisode = Date.now
+            podcast.podcastHTMLDescription = "<p>Test description</p>"
+            podcast.fundingURL = "https://www.pocketcasts.com"
+            podcast.networkListId = "cdb75bc0-9f5a-4217-b1ca-f573821a7913"
+            return podcast
+        }
+
+        /// Expanded, which is the only state that shows the category and author line.
+        static func makeViewModel() -> PodcastHeaderViewModel {
+            let viewModel = PodcastHeaderViewModel(podcast: makePodcast())
+            viewModel.isExpanded = true
+            return viewModel
+        }
+
+        var body: some View {
+            VStack() {
+                PodcastHeaderView(viewModel: Self.makeViewModel())
+                Spacer()
+            }
+            .background(theme.primaryUi02)
+        }
+    }
+    static var previews: some View {
+        PreviewContainerView()
+            .previewWithAllThemes()
+    }
+}

@@ -1,0 +1,20 @@
+import AVFoundation
+import PocketCastsDataModel
+import PocketCastsServer
+
+class PlaybackItem: NSObject {
+    var episode: BaseEpisode
+
+    init(episode: BaseEpisode) {
+        self.episode = episode
+    }
+
+    func createPlayerItem() -> AVPlayerItem? {
+        guard let url = EpisodeManager.url(for: episode) else { return nil }
+        // there is now an official, working way to set the user-agent for every request
+        // https://developer.apple.com/documentation/avfoundation/avurlassethttpuseragentkey
+        let options: [String: Any] = [AVURLAssetHTTPUserAgentKey: ServerConstants.Values.appUserAgent]
+        let asset = AVURLAsset(url: url, options: options)
+        return AVPlayerItem(asset: asset, automaticallyLoadedAssetKeys: [.tracks])
+    }
+}
