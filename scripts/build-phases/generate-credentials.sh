@@ -9,6 +9,10 @@ CREDS_INPUT_PATH=${SOURCE_ROOT}/podcasts/Credentials/ApiCredentials.tpl
 LOCAL_SECRETS_FILE="${SRCROOT}/podcasts/Credentials/LocalApiCredentials.swift"
 CREDS_OUTPUT_PATH=${DERIVED_PATH}/ApiCredentials.swift
 
+## Generate the Derived Sources folder, if needed
+##
+mkdir -p ${DERIVED_PATH}
+
 # If the developer has a local secrets file, use it
 if [ -f "$LOCAL_SECRETS_FILE" ]; then
     echo "warning: Using local Secrets from $LOCAL_SECRETS_FILE. If you are an external contributor, this is expected and you can ignore this warning. If you are an internal contributor, make sure to use our shared credentials instead."
@@ -24,10 +28,6 @@ if [ ! -f $CREDENTIALS_JSON_PATH ]; then
     exit 1
 else
     echo ">> Loading Secrets from ${CREDENTIALS_JSON_PATH}"
-
-    ## Generate the Derived Sources folder, if needed
-    ##
-    mkdir -p ${DERIVED_PATH}
 
     ## Generate ApiCredentials.swift
     ##
