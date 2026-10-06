@@ -5,7 +5,6 @@ import PocketCastsServer
 import PocketCastsUtils
 import SJUtils
 import UIKit
-import UIDeviceIdentifier
 import SwiftUI
 import SafariServices
 
