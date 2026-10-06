@@ -131,9 +131,7 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
         case .themeGallery:
             let cell = tableView.dequeueReusableCell(withIdentifier: disclosureCellId, for: indexPath) as! DisclosureCell
             cell.cellLabel.text = L10n.themeGalleryTitle
-            if let active = CustomThemeManager.shared.activeCustomTheme {
-                cell.cellSecondaryLabel.text = active.name
-            }
+            cell.cellSecondaryLabel.text = CustomThemeManager.shared.activeCustomTheme?.name
 
             return cell
         case .appIcon:

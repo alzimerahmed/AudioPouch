@@ -65,6 +65,11 @@ struct ThemeGalleryView: View {
                                     onLockedTheme()
                                 } else {
                                     manager.deactivate()
+                                    if themeType.isDark {
+                                        Theme.setPreferredDarkTheme(themeType, systemIsDark: Theme.systemIsDark, userInitiated: true)
+                                    } else {
+                                        Theme.setPreferredLightTheme(themeType, systemIsDark: Theme.systemIsDark)
+                                    }
                                     theme.activeTheme = themeType
                                 }
                             } delete: {}
