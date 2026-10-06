@@ -160,8 +160,8 @@ public enum CustomThemeValidator {
         func channel(_ index: Int) -> Double? {
             let start = digits.index(digits.startIndex, offsetBy: index)
             let value = digits[start...digits.index(start, offsetBy: 1)]
-            guard let component = Double(String(value), radix: 16) else { return nil }
-            let normalized = component / 255.0
+            guard let component = Int(String(value), radix: 16) else { return nil }
+            let normalized = Double(component) / 255.0
             return normalized <= 0.03928 ? normalized / 12.92 : pow((normalized + 0.055) / 1.055, 2.4)
         }
 
