@@ -1,4 +1,5 @@
 import PocketCastsServer
+import PocketCastsUtils
 import UIKit
 
 class AppearanceViewController: PCViewController, UITableViewDataSource, UITableViewDelegate, IconSelectorCellDelegate {
@@ -179,7 +180,15 @@ class AppearanceViewController: PCViewController, UITableViewDataSource, UITable
                 Theme.setPreferredDarkTheme(theme, systemIsDark: Theme.systemIsDark, userInitiated: true)
             }
         } else if row == .themeGallery {
-            let gallery = ThemeGalleryView().environmentObject(Theme.shared)
+            let gallery = ThemeGalleryView(onLockedTheme: { [weak self] in
+                guard let self else { return }
+
+                self.dismiss(animated: true) {
+                    NavigationManager.shared.showUpsellView(from: self, source: .themes)
+                }
+            }, dismissAction: { [weak self] in
+                self?.dismiss(animated: true, completion: nil)
+            }).environmentObject(Theme.shared)
             present(PCHostingController(rootView: gallery), animated: true, completion: nil)
         }
     }

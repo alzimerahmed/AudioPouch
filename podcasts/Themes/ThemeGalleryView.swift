@@ -10,61 +10,88 @@ struct ThemeGalleryView: View {
     @EnvironmentObject var theme: Theme
     @ObservedObject private var manager = CustomThemeManager.shared
 
+    /// Called when a locked (Plus-only) built-in theme is tapped. The
+    /// presenter is expected to dismiss the gallery and show the upsell,
+    /// matching `ThemeSelectorView`'s gating.
+    var onLockedTheme: () -> Void = {}
+
+    /// Called by the close button — the presenter dismisses the modal.
+    var dismissAction: () -> Void = {}
+
     @State private var showingImporter = false
     @State private var deleteCandidate: CustomThemeStore.Entry?
     @State private var errorTitle: String?
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack {
-            ThemeColor.primaryUi01(for: theme.activeTheme).color.ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                ThemeColor.primaryUi01(for: theme.activeTheme).color.ignoresSafeArea()
 
-            List {
-                if !manager.themes.isEmpty {
-                    Section(header: Text(L10n.themeGalleryImportedHeader)) {
-                        ForEach(manager.themes) { entry in
-                            row(
-                                title: entry.name,
-                                lightColor: entry.light[CustomThemeToken.primaryUi01.rawValue],
-                                darkColor: entry.dark[CustomThemeToken.primaryUi01.rawValue],
-                                accent: entry.accentColor,
-                                isSelected: manager.activeCustomTheme?.id == entry.id,
-                                deletable: true
-                            ) {
-                                manager.activate(entry)
-                            } delete: {
-                                deleteCandidate = entry
+                List {
+                    if !manager.themes.isEmpty {
+                        Section(header: Text(L10n.themeGalleryImportedHeader)) {
+                            ForEach(manager.themes) { entry in
+                                row(
+                                    title: entry.name,
+                                    lightColor: entry.light[CustomThemeToken.primaryUi01.rawValue],
+                                    darkColor: entry.dark[CustomThemeToken.primaryUi01.rawValue],
+                                    accent: entry.accentColor,
+                                    isSelected: manager.activeCustomTheme?.id == entry.id,
+                                    isLocked: false,
+                                    deletable: true
+                                ) {
+                                    manager.activate(entry)
+                                } delete: {
+                                    deleteCandidate = entry
+                                }
                             }
                         }
                     }
-                }
 
-                Section(header: Text(L10n.themeGalleryBuiltInHeader)) {
-                    ForEach(ThemeType.displayOrder, id: \.rawValue) { themeType in
-                        row(
-                            title: themeType.description,
-                            lightColor: nil,
-                            darkColor: nil,
-                            accent: nil,
-                            isSelected: manager.activeCustomTheme == nil && theme.activeTheme == themeType,
-                            deletable: false
-                        ) {
-                            manager.deactivate()
-                            theme.activeTheme = themeType
-                        } delete: {}
+                    Section(header: Text(L10n.themeGalleryBuiltInHeader)) {
+                        ForEach(ThemeType.displayOrder, id: \.rawValue) { themeType in
+                            let isLocked = themeType.isPlusOnly && !SubscriptionHelper.hasActiveSubscription()
+                            row(
+                                title: themeType.description,
+                                lightColor: nil,
+                                darkColor: nil,
+                                accent: nil,
+                                isSelected: manager.activeCustomTheme == nil && theme.activeTheme == themeType,
+                                isLocked: isLocked,
+                                deletable: false
+                            ) {
+                                if isLocked {
+                                    onLockedTheme()
+                                } else {
+                                    manager.deactivate()
+                                    theme.activeTheme = themeType
+                                }
+                            } delete: {}
+                        }
                     }
                 }
+                .listStyle(.insetGrouped)
             }
-            .listStyle(.insetGrouped)
-        }
-        .navigationTitle(L10n.themeGalleryTitle)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingImporter = true
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
-                        .accessibilityLabel(L10n.themeGalleryImport)
+            .navigationTitle(L10n.themeGalleryTitle)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        dismissAction()
+                    } label: {
+                        Image("cancel")
+                            .renderingMode(.template)
+                    }
+                    .navThemed()
+                    .accessibilityLabel(L10n.accessibilityCloseDialog)
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                            .accessibilityLabel(L10n.themeGalleryImport)
+                    }
                 }
             }
         }
@@ -100,7 +127,7 @@ struct ThemeGalleryView: View {
         Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
     }
 
-    private func row(title: String, lightColor: String?, darkColor: String?, accent: String?, isSelected: Bool, deletable: Bool, apply: @escaping () -> Void, delete: @escaping () -> Void) -> some View {
+    private func row(title: String, lightColor: String?, darkColor: String?, accent: String?, isSelected: Bool, isLocked: Bool, deletable: Bool, apply: @escaping () -> Void, delete: @escaping () -> Void) -> some View {
         Button(action: apply) {
             HStack(spacing: 12) {
                 ThemeSwatchView(
@@ -119,24 +146,31 @@ struct ThemeGalleryView: View {
 
                 Spacer()
 
-                if isSelected {
+                if isLocked {
+                    Image("plusGoldCircle")
+                        .accessibilityHidden(true)
+                } else if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(ThemeColor.primaryIcon02Selected(for: theme.activeTheme).color)
-                        .accessibilityLabel(L10n.themeGalleryCurrent)
-                }
-
-                if deletable {
-                    Button {
-                        delete()
-                    } label: {
-                        Image(systemName: "trash")
-                            .foregroundColor(ThemeColor.support05(for: theme.activeTheme).color)
-                    }
-                    .accessibilityLabel(L10n.themeGalleryDelete)
+                        .accessibilityHidden(true)
                 }
             }
         }
         .buttonStyle(.plain)
+        .opacity(isLocked ? 0.5 : 1)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? L10n.themeGalleryCurrent : "")
+        .accessibilityHint(isLocked ? L10n.accessibilityPlusOnly : "")
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if deletable {
+                Button(role: .destructive) {
+                    delete()
+                } label: {
+                    Label(L10n.themeGalleryDelete, systemImage: "trash")
+                }
+            }
+        }
     }
 
     private func importTheme(result: Result<URL, Error>) {

@@ -7,10 +7,13 @@ import UIKit
 /// Bridges user-imported custom themes (persisted via `CustomThemeStore`)
 /// into the app's theme system.
 ///
-/// A custom theme rides on a built-in base theme (`light` or `dark`): all
-/// `Themeable` screens keep working through the standard `ThemeColor` tokens,
-/// and the custom accent color is applied on top while the custom theme is
-/// active. Selecting any built-in theme deactivates the custom one.
+/// A custom theme rides on a built-in base theme (the user's preferred light
+/// or dark theme): all `Themeable` screens keep working through the standard
+/// `ThemeColor` tokens, and the custom accent color is applied on top while
+/// the custom theme is active. Same-darkness base changes (system theme
+/// flips, a new preferred theme) rebase the custom theme instead of
+/// deactivating it; the gallery deactivates it explicitly when a built-in
+/// theme row is applied.
 final class CustomThemeManager: ObservableObject {
     static let activeCustomThemeIDKey = "activeCustomThemeID"
     static let shared = CustomThemeManager()
@@ -29,15 +32,23 @@ final class CustomThemeManager: ObservableObject {
             activeCustomTheme = store.entry(id: id)
         }
 
-        // If the user picks a built-in theme from anywhere else in the app,
-        // the custom theme is no longer active.
+        // If the active theme is no longer the preferred theme for its
+        // darkness (e.g. it was set directly, bypassing the preferred-theme
+        // setters), the custom theme is no longer active. Same-darkness
+        // changes — system theme flips or a new preferred light/dark pick —
+        // keep it active and rebase onto the new base.
         NotificationCenter.default.addObserver(forName: Constants.Notifications.themeChanged, object: nil, queue: .main) { [weak self] _ in
             guard let self, self.activeCustomTheme != nil else { return }
-            let expectedBase: ThemeType = Theme.systemIsDark ? .dark : .light
-            if Theme.shared.activeTheme != expectedBase {
+            if Theme.shared.activeTheme != Self.expectedBaseTheme() {
                 self.deactivate()
             }
         }
+    }
+
+    /// The built-in base theme a custom theme rides on for the active
+    /// theme's current darkness — the user's preferred dark or light theme.
+    private static func expectedBaseTheme() -> ThemeType {
+        Theme.shared.activeTheme.isDark ? Theme.preferredDarkTheme() : Theme.preferredLightTheme()
     }
 
     /// The accent color of the active custom theme, resolved for the current
