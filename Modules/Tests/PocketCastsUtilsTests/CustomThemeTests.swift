@@ -91,6 +91,41 @@ final class CustomThemeTests: XCTestCase {
         XCTAssertTrue(CustomThemeValidator.validate(file).contains { $0.isInsufficientContrast(palette: "dark") })
     }
 
+    func testValidateRejectsLowContrastSecondaryText() {
+        var palette = Self.completePalette()
+        palette["primaryText02"] = "#999999" // ~2.8:1 on white
+        let file = CustomThemeFile(name: "Faded", accentColor: "#000000", light: palette, dark: Self.completePalette())
+        XCTAssertTrue(CustomThemeValidator.validate(file).contains { $0.isInsufficientContrast(palette: "light") })
+    }
+
+    func testValidateRejectsLowContrastInteractiveColor() {
+        var palette = Self.completePalette()
+        palette["primaryInteractive01"] = "#CCCCCC" // ~1.6:1 on white
+        let file = CustomThemeFile(name: "Washed", accentColor: "#000000", light: palette, dark: Self.completePalette())
+        XCTAssertTrue(CustomThemeValidator.validate(file).contains { $0.isInsufficientContrast(palette: "light") })
+    }
+
+    func testValidateRejectsLowContrastAccentColor() {
+        let file = CustomThemeFile(name: "Pale", accentColor: "#CCCCCC", light: Self.completePalette(), dark: Self.completePalette())
+        XCTAssertTrue(CustomThemeValidator.validate(file).contains { $0.isInsufficientContrast(palette: "light") })
+    }
+
+    func testValidateRejectsTranslucentTextCollapsingContrast() {
+        var palette = Self.completePalette()
+        // 50% alpha black text over white composites to ~#888888 (~3.5:1) — below AA.
+        palette["primaryText01"] = "#11111180"
+        let file = CustomThemeFile(name: "Ghost", accentColor: "#000000", light: palette, dark: Self.completePalette())
+        XCTAssertTrue(CustomThemeValidator.validate(file).contains { $0.isInsufficientContrast(palette: "light") })
+    }
+
+    func testValidateAcceptsTranslucentTextWithSufficientContrast() {
+        var palette = Self.completePalette()
+        // 90% alpha black text over white composites to ~#212121 (~16:1) — passes AA.
+        palette["primaryText01"] = "#111111E6"
+        let file = CustomThemeFile(name: "Solid", accentColor: "#000000", light: palette, dark: Self.completePalette())
+        XCTAssertEqual(CustomThemeValidator.validate(file), [])
+    }
+
     func testValidThemeHasNoErrors() {
         let file = CustomThemeFile(name: "OK", accentColor: "#F44336", light: Self.completePalette(), dark: Self.completePalette())
         XCTAssertEqual(CustomThemeValidator.validate(file), [])
