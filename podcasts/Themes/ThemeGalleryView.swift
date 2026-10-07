@@ -33,6 +33,7 @@ struct ThemeGalleryView: View {
                     builtInSection
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle(L10n.themeGalleryTitle)
             .toolbar {
@@ -156,6 +157,7 @@ struct ThemeGalleryView: View {
                 .frame(width: 44, height: 30)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(ThemeColor.primaryUi05(for: theme.activeTheme).color, lineWidth: 1))
+                .opacity(isLocked ? 0.5 : 1)
                 .accessibilityHidden(true)
 
                 Text(title)
@@ -175,7 +177,6 @@ struct ThemeGalleryView: View {
             }
         }
         .buttonStyle(.plain)
-        .opacity(isLocked ? 0.5 : 1)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
         .accessibilityValue(isSelected ? L10n.themeGalleryCurrent : "")

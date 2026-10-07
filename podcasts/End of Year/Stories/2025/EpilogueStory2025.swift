@@ -16,6 +16,8 @@ struct EpilogueStory2025: StoryView {
     @State private var opacity: CGFloat = 0.0
     @State private var isAnimating: Bool = true
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         VStack {
             Spacer()
@@ -70,7 +72,9 @@ struct EpilogueStory2025: StoryView {
         }
         .enableProportionalValueScaling()
         .onAppear {
-            self.isAnimating = true
+            // Under Reduce Motion the content appears in its final state
+            // without the move/fade animation.
+            self.isAnimating = !reduceMotion
             self.offset = 0
             self.opacity = 1
         }

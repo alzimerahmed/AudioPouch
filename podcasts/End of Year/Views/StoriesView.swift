@@ -7,6 +7,8 @@ struct StoriesView: View {
     @ObservedObject private var syncProgressModel: SyncYearListeningProgress
 
     @Environment(\.accessibilityShowButtonShapes) var showButtonShapes: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The maximum tap time for a gesture to be recognized as tap
     /// If it's longer than that, it's considered a gesture
@@ -28,6 +30,13 @@ struct StoriesView: View {
             stories
             .onAppear {
                 model.start()
+                // Time-limited auto-advancing content is unusable with
+                // VoiceOver (WCAG 2.2.1/2.2.2) and unwanted under Reduce
+                // Motion — pause the timer and let the user navigate via
+                // the accessibility actions instead.
+                if voiceOverEnabled || reduceMotion {
+                    pauseState.pause()
+                }
             }
         } else if model.failed {
             failed
@@ -102,6 +111,20 @@ struct StoriesView: View {
             } else {
                 model.start()
             }
+        }
+        .onChange(of: model.currentStoryIndex) { _, _ in
+            guard voiceOverEnabled else { return }
+            // Announce the new story so VoiceOver reads it when auto/manual advance happens.
+            UIAccessibility.post(notification: .screenChanged, argument: nil)
+        }
+        .accessibilityAction(named: Text(L10n.eoyStoriesPrevious)) {
+            model.previous()
+        }
+        .accessibilityAction(named: Text(L10n.eoyStoriesNext)) {
+            model.next()
+        }
+        .accessibilityAction(named: Text(pauseState.isPaused ? L10n.eoyStoriesPlay : L10n.eoyStoriesPause)) {
+            pauseState.togglePause()
         }
     }
 
@@ -229,6 +252,9 @@ struct StoriesView: View {
                     model.next()
                 }
         }
+        // Navigation is exposed to VoiceOver via the accessibility actions
+        // on the story container instead of these invisible tap targets.
+        .accessibilityHidden(true)
         .simultaneousGesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .local)
                 .onChanged { _ in

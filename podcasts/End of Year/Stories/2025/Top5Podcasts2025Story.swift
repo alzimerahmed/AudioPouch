@@ -6,6 +6,7 @@ import EndOfYear
 struct Top5Podcasts2025Story: ShareableStory {
     @Environment(\.renderForSharing) var renderForSharing: Bool
     @Environment(\.animated) var animated: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let top5Podcasts: [TopPodcast]
 
@@ -25,7 +26,7 @@ struct Top5Podcasts2025Story: ShareableStory {
                     .frame(height: 30)
                 VStack(alignment: .leading, spacing: 0) {
                     podcastList()
-                        .animation(.timingCurve(0.12, 0.49, 0.38, 1.0, duration: 1), value: itemScale)
+                        .animation(reduceMotion ? nil : .timingCurve(0.12, 0.49, 0.38, 1.0, duration: 1), value: itemScale)
                 }
                 .modify { view in
                     if renderForSharing {

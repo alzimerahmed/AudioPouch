@@ -39,6 +39,7 @@ struct NumberListened2025: ShareableStory {
 
     @Environment(\.renderForSharing) var renderForSharing: Bool
     @Environment(\.animated) var animated: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @ObservedObject private var animationViewModel = PlayPauseAnimationViewModel(duration: EndOfYear.defaultDuration)
 
@@ -116,7 +117,7 @@ struct NumberListened2025: ShareableStory {
         }
         .frame(width: Constants.animationSize, height: Constants.animationSize)
         .onAppear {
-            if animated {
+            if animated, !reduceMotion {
                 animationViewModel.play()
                 startCoverAnimation()
                 stepCounter.start()
@@ -130,7 +131,7 @@ struct NumberListened2025: ShareableStory {
     func startCoverAnimation() {
         progress = 0
         zChange = 0
-        withAnimation(.timingCurve(0.90, 0.00, 0.08, 1.00, duration: Constants.speed)) {
+        withAccessibilityAnimation(.timingCurve(0.90, 0.00, 0.08, 1.00, duration: Constants.speed)) {
             progress = 1
         }
         // ZIndex changes cannot be animated so we are using this dispach to cause a change of Z index at the middle of the animation

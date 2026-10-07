@@ -131,6 +131,8 @@ struct IntroCarouselView: View {
                 }
                 .foregroundColor(theme.primaryText01)
                 .applyButtonFont(maxContentSizeCategory: .accessibilityMedium)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
 
                 if FeatureFlag.accountFreeOnboarding.enabled {
                     Button(L10n.onboardingSkip) {
@@ -138,6 +140,8 @@ struct IntroCarouselView: View {
                     }
                     .foregroundColor(theme.primaryText02)
                     .applyButtonFont(maxContentSizeCategory: .accessibilityMedium)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                     .accessibilityHint(L10n.onboardingSkipHint)
                 }
             }

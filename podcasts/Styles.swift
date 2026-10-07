@@ -218,7 +218,7 @@ struct RoundedButton: ViewModifier {
         HStack {
             Spacer()
             content
-                .font(.system(size: 18, weight: .semibold))
+                .font(size: 18, style: .body, weight: .semibold)
                 .foregroundColor(ThemeColor.primaryUi01(for: theme.activeTheme).color)
             Spacer()
         }

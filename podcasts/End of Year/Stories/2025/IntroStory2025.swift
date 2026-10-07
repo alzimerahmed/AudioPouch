@@ -53,10 +53,10 @@ struct IntroStory2025: StoryView {
             } else {
                 if position > KeyFrames.circleOpen, !openCircle {
                     openCircle = true
-                    withAnimation(.easeInOut(duration: 0.005)) {
+                    withAccessibilityAnimation(.easeInOut(duration: 0.005)) {
                         self.opacity = 1
                     }
-                    withAnimation(.easeInOut(duration: 1)) {
+                    withAccessibilityAnimation(.easeInOut(duration: 1)) {
                         self.scale = 10
                     }
                 }

@@ -18,7 +18,7 @@ class SyncProviderTests: XCTestCase {
     func testDefaultProviderIsPocketCasts() {
         let provider = SyncProviderRegistry.defaultProvider
         XCTAssertEqual(provider.identifier, "pocketcasts")
-        XCTAssertEqual(provider.displayName, "Pocket Casts")
+        XCTAssertEqual(provider.displayName, "AudioPouch")
     }
 
     /// With the flag off, the active provider is the upstream one regardless of

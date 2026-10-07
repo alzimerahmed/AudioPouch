@@ -8,6 +8,7 @@ struct TopSpotStory2025: ShareableStory {
 
     @Environment(\.renderForSharing) var renderForSharing: Bool
     @Environment(\.animated) var animated: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let topPodcast: TopPodcast
 
@@ -51,7 +52,7 @@ struct TopSpotStory2025: ShareableStory {
                 backgroundAnimationScale = 1.0
                 coverAnimationScale = 1.0
             } else {
-                withAnimation(scaleAnimation) {
+                withAccessibilityAnimation(scaleAnimation) {
                     backgroundAnimationScale = 1.0
                     coverAnimationScale = 1.0
                 }

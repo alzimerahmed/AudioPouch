@@ -62,10 +62,14 @@ public enum CustomThemeError: Error, Equatable {
 public enum CustomThemeValidator {
     /// Maximum length of a theme name.
     public static let maxNameLength = 40
-    /// Minimum WCAG contrast ratio required between `primaryText01` and
-    /// `primaryUi01` in each palette. Deliberately lenient (2.0) so expressive
-    /// themes pass while unreadable ones are rejected.
-    public static let minimumContrastRatio = 2.0
+    /// Minimum WCAG AA contrast ratio (4.5:1) required for text tokens
+    /// (`primaryText01`, `primaryText02`) against `primaryUi01` in each palette.
+    public static let minimumTextContrastRatio = 4.5
+    /// Minimum WCAG contrast ratio (3:1) required for non-text UI tokens
+    /// (`primaryInteractive01`, `accentColor`) against `primaryUi01`.
+    public static let minimumUiContrastRatio = 3.0
+    /// Backwards-compatible alias for the text contrast floor.
+    public static let minimumContrastRatio = minimumTextContrastRatio
 
     /// Parses raw JSON data into a validated `CustomThemeFile`.
     /// Throws the first validation error found.
@@ -122,11 +126,34 @@ public enum CustomThemeValidator {
         }
 
         for (key, palette) in [("light", file.light), ("dark", file.dark)] {
-            if let background = palette[CustomThemeToken.primaryUi01.rawValue],
-               let text = palette[CustomThemeToken.primaryText01.rawValue],
-               isValidHex(background), isValidHex(text) {
-                let ratio = contrastRatio(background, text) ?? 0
-                if ratio < minimumContrastRatio {
+            guard let background = palette[CustomThemeToken.primaryUi01.rawValue],
+                  isValidHex(background) else {
+                continue
+            }
+
+            // Text tokens must meet the WCAG AA text threshold (4.5:1).
+            for token in [CustomThemeToken.primaryText01, .primaryText02] {
+                if let foreground = palette[token.rawValue], isValidHex(foreground) {
+                    let ratio = contrastRatio(background, foreground) ?? 0
+                    if ratio < minimumTextContrastRatio {
+                        errors.append(.insufficientContrast(palette: key, ratio: ratio))
+                    }
+                }
+            }
+
+            // Non-text UI tokens (interactive elements, accent) need 3:1.
+            for token in [CustomThemeToken.primaryInteractive01] {
+                if let foreground = palette[token.rawValue], isValidHex(foreground) {
+                    let ratio = contrastRatio(background, foreground) ?? 0
+                    if ratio < minimumUiContrastRatio {
+                        errors.append(.insufficientContrast(palette: key, ratio: ratio))
+                    }
+                }
+            }
+
+            if isValidHex(file.accentColor) {
+                let ratio = contrastRatio(background, file.accentColor) ?? 0
+                if ratio < minimumUiContrastRatio {
                     errors.append(.insufficientContrast(palette: key, ratio: ratio))
                 }
             }
@@ -146,26 +173,62 @@ public enum CustomThemeValidator {
 
     /// WCAG relative-luminance contrast ratio between two hex colors,
     /// or nil if either is invalid.
+    ///
+    /// If a color carries an alpha channel (`#RRGGBBAA`), it is composited
+    /// over the other color before the ratio is computed, so a translucent
+    /// foreground can't pass on raw (pre-composite) values alone.
     public static func contrastRatio(_ hexA: String, _ hexB: String) -> Double? {
-        guard let a = relativeLuminance(hexA), let b = relativeLuminance(hexB) else { return nil }
+        guard let a = effectiveLuminance(hexA, over: hexB), let b = effectiveLuminance(hexB, over: hexA) else { return nil }
         let lighter = max(a, b)
         let darker = min(a, b)
         return (lighter + 0.05) / (darker + 0.05)
     }
 
-    private static func relativeLuminance(_ hex: String) -> Double? {
+    /// Relative luminance of `hex`, compositing its alpha channel over
+    /// `backdrop` when present. Opaque colors are returned as-is.
+    private static func effectiveLuminance(_ hex: String, over backdrop: String) -> Double? {
+        guard let channels = colorChannels(hex) else { return nil }
+        guard channels.alpha < 1 else { return relativeLuminance(hex) }
+        guard let backdropChannels = colorChannels(backdrop) else { return nil }
+
+        let blended = zip(channels.rgb, backdropChannels.rgb).map { foreground, background in
+            foreground * channels.alpha + background * (1 - channels.alpha)
+        }
+        return luminance(fromComponents: blended)
+    }
+
+    private struct ColorChannels {
+        let rgb: [Double]
+        let alpha: Double
+    }
+
+    private static func colorChannels(_ hex: String) -> ColorChannels? {
         let digits = hex.trimmingCharacters(in: .whitespacesAndNewlines).dropFirst()
-        guard digits.count >= 6 else { return nil }
+        guard digits.count == 6 || digits.count == 8 else { return nil }
 
         func channel(_ index: Int) -> Double? {
             let start = digits.index(digits.startIndex, offsetBy: index)
             let value = digits[start...digits.index(start, offsetBy: 1)]
             guard let component = Int(String(value), radix: 16) else { return nil }
-            let normalized = Double(component) / 255.0
-            return normalized <= 0.03928 ? normalized / 12.92 : pow((normalized + 0.055) / 1.055, 2.4)
+            return Double(component) / 255.0
         }
 
         guard let r = channel(0), let g = channel(2), let b = channel(4) else { return nil }
+        let alpha = digits.count == 8 ? (channel(6) ?? 1) : 1
+        return ColorChannels(rgb: [r, g, b], alpha: alpha)
+    }
+
+    private static func luminance(fromComponents components: [Double]) -> Double? {
+        func linearize(_ normalized: Double) -> Double {
+            normalized <= 0.03928 ? normalized / 12.92 : pow((normalized + 0.055) / 1.055, 2.4)
+        }
+        guard components.count == 3 else { return nil }
+        let r = linearize(components[0]), g = linearize(components[1]), b = linearize(components[2])
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    }
+
+    private static func relativeLuminance(_ hex: String) -> Double? {
+        guard let channels = colorChannels(hex) else { return nil }
+        return luminance(fromComponents: channels.rgb)
     }
 }
