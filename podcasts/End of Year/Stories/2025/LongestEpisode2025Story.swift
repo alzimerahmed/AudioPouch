@@ -47,12 +47,12 @@ struct LongestEpisode2025Story: ShareableStory {
         .foregroundStyle(foregroundColor)
         .background(backgroundColor)
         .onAppear {
-            withAnimation(scaleAnimation) {
+            withAccessibilityAnimation(scaleAnimation) {
                 self.imageScale = 1.0
             }
         }
         .onDisappear {
-            withAnimation(scaleAnimation) {
+            withAccessibilityAnimation(scaleAnimation) {
                 self.imageScale = 1.1
             }
         }
