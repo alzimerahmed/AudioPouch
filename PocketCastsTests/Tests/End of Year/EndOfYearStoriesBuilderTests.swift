@@ -299,6 +299,11 @@ class EndOfYearStoriesBuilderTests: XCTestCase {
         Settings.setHasSyncedEpisodesForPlayback(false, year: 2023)
 
         endOfYearManager.isFullListeningHistoryToReturn = false
+        endOfYearManager.topPodcastsToReturn = [
+            TopPodcast(podcast: Podcast.previewPodcast(),
+                       numberOfPlayedEpisodes: 3,
+                       totalPlayedTime: 3000)
+        ]
         endOfYearManager.listeningTimeToReturn = 3000
         await builder.build()
 
