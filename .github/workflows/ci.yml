@@ -42,7 +42,7 @@ jobs:
           make install_dependencies
           make external_contributor
 
-      - name: Build & test (unsigned)
+      - name: Build & test
         run: |
           set -o pipefail
           xcodebuild test \
@@ -51,7 +51,7 @@ jobs:
             -testPlan UnitTests \
             -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -skipPackagePluginValidation \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="-" \
             | xcbeautify
 
       - name: Upload result bundle on failure
