@@ -4194,6 +4194,10 @@
 
 /* Label for the replay button, which when tapped started the end of year stories from the first one. */
 "eoy_story_replay" = "Play again";
+"eoy_stories_next" = "Next story";
+"eoy_stories_pause" = "Pause story";
+"eoy_stories_play" = "Play story";
+"eoy_stories_previous" = "Previous story";
 
 /* Title of the top categories story. */
 "eoy_story_top_categories" = "Your Top Categories";
