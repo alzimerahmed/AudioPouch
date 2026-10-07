@@ -29,8 +29,8 @@ class SyncProviderTests: XCTestCase {
     }
 
     /// With the flag on but only one provider registered, upstream is still used.
-    func testActiveProviderIsUpstreamWhenFlagOnWithSingleProvider() {
-        try? FeatureFlagOverrideStore().override(FeatureFlag.syncProviderOptions, withValue: true)
+    func testActiveProviderIsUpstreamWhenFlagOnWithSingleProvider() throws {
+        try FeatureFlagOverrideStore().override(FeatureFlag.syncProviderOptions, withValue: true)
         XCTAssertTrue(FeatureFlag.syncProviderOptions.enabled)
         XCTAssertEqual(SyncProviderRegistry.activeProvider.identifier, "pocketcasts")
     }
