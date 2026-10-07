@@ -36,27 +36,29 @@ class SyncProviderTests: XCTestCase {
     }
 
     /// An unconfigured upstream provider reports itself as such and refuses to sync.
-    func testUnconfiguredProviderCannotSync() {
+    func testUnconfiguredProviderCannotSync() throws {
         let provider = PocketCastsSyncProvider()
-        provider.syncTrigger = { true }
+        provider.syncTrigger = { _ in true }
         // Test environment has no sync credentials; if one leaks in, skip the assert.
-        guard !provider.isConfigured else { return }
+        guard !provider.isConfigured else {
+            throw XCTSkip("Sync credentials leaked into test environment")
+        }
         XCTAssertFalse(provider.syncNow(reason: .add), "Unconfigured provider must not sync")
     }
 
-    /// A configured provider delegates to the installed trigger hook.
+    /// A configured provider delegates to the installed trigger hook, forwarding the reason.
     func testConfiguredProviderDelegatesToTrigger() throws {
         let provider = PocketCastsSyncProvider()
-        var triggerCalled = false
-        provider.syncTrigger = {
-            triggerCalled = true
+        var receivedReason: SyncManager.SyncingReason?
+        provider.syncTrigger = { reason in
+            receivedReason = reason
             return true
         }
         try configureSyncingEmail()
 
         XCTAssertTrue(provider.isConfigured)
         XCTAssertTrue(provider.syncNow(reason: .add))
-        XCTAssertTrue(triggerCalled)
+        XCTAssertEqual(receivedReason, .add)
     }
 
     /// A configured provider with no trigger installed reports unavailability

@@ -33,9 +33,10 @@ public protocol SyncProvider: AnyObject {
 /// Thin adapter only — all real work stays in `SyncManager`/`SyncTask`.
 public final class PocketCastsSyncProvider: SyncProvider {
     /// Optional hook the app target can install to trigger its existing sync
-    /// flow (the app owns the sync scheduling today). When nil, `syncNow`
-    /// reports that syncing is unavailable rather than guessing.
-    public var syncTrigger: (() -> Bool)?
+    /// flow (the app owns the sync scheduling today). Receives the sync reason
+    /// so providers can distinguish e.g. `login` from `add`. When nil,
+    /// `syncNow` reports that syncing is unavailable rather than guessing.
+    public var syncTrigger: ((SyncManager.SyncingReason) -> Bool)?
 
     public init() {}
 
@@ -50,31 +51,27 @@ public final class PocketCastsSyncProvider: SyncProvider {
     @discardableResult
     public func syncNow(reason: SyncManager.SyncingReason) -> Bool {
         guard isConfigured else { return false }
-        return syncTrigger?() ?? false
+        return syncTrigger?(reason) ?? false
     }
 }
 
-/// Registry of available sync providers. The active provider is resolved once
-/// per lookup so tests and feature flags can change it cheaply.
+/// Registry of available sync providers. Holds a shared provider instance so
+/// hooks installed on it (e.g. `syncTrigger`) survive between lookups.
+/// Future providers register here behind `FeatureFlag.syncProviderOptions`.
 public enum SyncProviderRegistry {
+    /// Shared upstream provider instance.
+    public private(set) static var defaultProvider: SyncProvider = PocketCastsSyncProvider()
+
     /// All providers the build knows about. Only the upstream provider exists
-    /// today; future providers register here behind `FeatureFlag.syncProviderOptions`.
+    /// today; future providers are added here behind `FeatureFlag.syncProviderOptions`.
     public static var availableProviders: [SyncProvider] {
-        [PocketCastsSyncProvider()]
+        [defaultProvider]
     }
 
     /// The provider the app should use. While `syncProviderOptions` is off
     /// (default), this always returns the upstream provider — behavior is
     /// unchanged from before the seam existed.
     public static var activeProvider: SyncProvider {
-        guard FeatureFlag.syncProviderOptions.enabled, availableProviders.count > 1 else {
-            return defaultProvider
-        }
-        // Future: read the user's chosen provider from settings here.
-        return defaultProvider
-    }
-
-    public static var defaultProvider: SyncProvider {
-        PocketCastsSyncProvider()
+        defaultProvider
     }
 }
