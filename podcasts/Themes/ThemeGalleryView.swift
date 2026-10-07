@@ -29,52 +29,8 @@ struct ThemeGalleryView: View {
                 ThemeColor.primaryUi01(for: theme.activeTheme).color.ignoresSafeArea()
 
                 List {
-                    if !manager.themes.isEmpty {
-                        Section(header: Text(L10n.themeGalleryImportedHeader)) {
-                            ForEach(manager.themes) { entry in
-                                row(
-                                    title: entry.name,
-                                    lightColor: entry.light[CustomThemeToken.primaryUi01.rawValue],
-                                    darkColor: entry.dark[CustomThemeToken.primaryUi01.rawValue],
-                                    accent: entry.accentColor,
-                                    isSelected: manager.activeCustomTheme?.id == entry.id,
-                                    isLocked: false,
-                                    deletable: true
-                                ) {
-                                    manager.activate(entry)
-                                } delete: {
-                                    deleteCandidate = entry
-                                }
-                            }
-                        }
-                    }
-
-                    Section(header: Text(L10n.themeGalleryBuiltInHeader)) {
-                        ForEach(ThemeType.displayOrder, id: \.rawValue) { themeType in
-                            let isLocked = themeType.isPlusOnly && !SubscriptionHelper.hasActiveSubscription()
-                            row(
-                                title: themeType.description,
-                                lightColor: nil,
-                                darkColor: nil,
-                                accent: nil,
-                                isSelected: manager.activeCustomTheme == nil && theme.activeTheme == themeType,
-                                isLocked: isLocked,
-                                deletable: false
-                            ) {
-                                if isLocked {
-                                    onLockedTheme()
-                                } else {
-                                    manager.deactivate()
-                                    if themeType.isDark {
-                                        Theme.setPreferredDarkTheme(themeType, systemIsDark: Theme.systemIsDark, userInitiated: true)
-                                    } else {
-                                        Theme.setPreferredLightTheme(themeType, systemIsDark: Theme.systemIsDark)
-                                    }
-                                    theme.activeTheme = themeType
-                                }
-                            } delete: {}
-                        }
-                    }
+                    importedSection
+                    builtInSection
                 }
                 .listStyle(.insetGrouped)
             }
@@ -122,6 +78,63 @@ struct ThemeGalleryView: View {
         .alert(errorTitle ?? L10n.themeGalleryErrorTitle, isPresented: errorBinding, actions: {}, message: {
             Text(errorMessage ?? "")
         })
+    }
+
+    @ViewBuilder
+    private var importedSection: some View {
+        if !manager.themes.isEmpty {
+            Section(header: Text(L10n.themeGalleryImportedHeader)) {
+                ForEach(manager.themes) { entry in
+                    row(
+                        title: entry.name,
+                        lightColor: entry.light[CustomThemeToken.primaryUi01.rawValue],
+                        darkColor: entry.dark[CustomThemeToken.primaryUi01.rawValue],
+                        accent: entry.accentColor,
+                        isSelected: manager.activeCustomTheme?.id == entry.id,
+                        isLocked: false,
+                        deletable: true
+                    ) {
+                        manager.activate(entry)
+                    } delete: {
+                        deleteCandidate = entry
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var builtInSection: some View {
+        Section(header: Text(L10n.themeGalleryBuiltinHeader)) {
+            ForEach(ThemeType.displayOrder, id: \.rawValue) { themeType in
+                let isLocked = themeType.isPlusOnly && !SubscriptionHelper.hasActiveSubscription()
+                row(
+                    title: themeType.description,
+                    lightColor: nil,
+                    darkColor: nil,
+                    accent: nil,
+                    isSelected: manager.activeCustomTheme == nil && theme.activeTheme == themeType,
+                    isLocked: isLocked,
+                    deletable: false
+                ) {
+                    selectBuiltIn(themeType, isLocked: isLocked)
+                } delete: {}
+            }
+        }
+    }
+
+    private func selectBuiltIn(_ themeType: ThemeType, isLocked: Bool) {
+        if isLocked {
+            onLockedTheme()
+            return
+        }
+        manager.deactivate()
+        if themeType.isDark {
+            Theme.setPreferredDarkTheme(themeType, systemIsDark: Theme.systemIsDark, userInitiated: true)
+        } else {
+            Theme.setPreferredLightTheme(themeType, systemIsDark: Theme.systemIsDark)
+        }
+        theme.activeTheme = themeType
     }
 
     private var deleteBinding: Binding<Bool> {
