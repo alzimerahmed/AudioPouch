@@ -168,11 +168,11 @@ struct ImportDetailsView: View {
     /// Listens for the completion/failure notifications posted by the OPML importer.
     /// Registered once in `.onAppear`; tokens removed in `.onDisappear`.
     private func observeOpmlImportNotifications() {
-        observerTokens.append(NotificationCenter.default.addObserver(forName: Constants.Notifications.opmlImportCompleted, object: nil, queue: nil) { _ in
+        observerTokens.append(NotificationCenter.default.addObserver(forName: podcasts.Constants.Notifications.opmlImportCompleted, object: nil, queue: nil) { _ in
             opmlURLImportResult = .success
             opmlImportInProgress = false
         })
-        observerTokens.append(NotificationCenter.default.addObserver(forName: Constants.Notifications.opmlImportFailed, object: nil, queue: nil) { _ in
+        observerTokens.append(NotificationCenter.default.addObserver(forName: podcasts.Constants.Notifications.opmlImportFailed, object: nil, queue: nil) { _ in
             opmlURLImportResult = .failure
             opmlImportInProgress = false
         })
