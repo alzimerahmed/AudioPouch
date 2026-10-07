@@ -42,7 +42,7 @@ public final class PocketCastsSyncProvider: SyncProvider {
 
     public var identifier: String { "pocketcasts" }
 
-    public var displayName: String { "Pocket Casts" }
+    public var displayName: String { "AudioPouch" }
 
     public var isConfigured: Bool {
         SyncManager.isUserLoggedIn()
