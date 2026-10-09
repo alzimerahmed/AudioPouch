@@ -20,7 +20,6 @@ struct ThemeGalleryView: View {
 
     @State private var showingImporter = false
     @State private var deleteCandidate: CustomThemeStore.Entry?
-    @State private var errorTitle: String?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -54,6 +53,8 @@ struct ThemeGalleryView: View {
                         Image(systemName: "square.and.arrow.down")
                             .accessibilityLabel(L10n.themeGalleryImport)
                     }
+                    .navThemed()
+                    .accessibilityIdentifier("theme_gallery_import")
                 }
             }
         }
@@ -76,7 +77,7 @@ struct ThemeGalleryView: View {
                 Text(L10n.themeGalleryDeleteConfirmMessage)
             }
         )
-        .alert(errorTitle ?? L10n.themeGalleryErrorTitle, isPresented: errorBinding, actions: {}, message: {
+        .alert(L10n.themeGalleryErrorTitle, isPresented: errorBinding, actions: {}, message: {
             Text(errorMessage ?? "")
         })
     }
@@ -88,6 +89,7 @@ struct ThemeGalleryView: View {
                 ForEach(manager.themes) { entry in
                     row(
                         title: entry.name,
+                        identifier: "custom_\(entry.id.uuidString)",
                         lightColor: entry.light[CustomThemeToken.primaryUi01.rawValue],
                         darkColor: entry.dark[CustomThemeToken.primaryUi01.rawValue],
                         accent: entry.accentColor,
@@ -111,6 +113,7 @@ struct ThemeGalleryView: View {
                 let isLocked = themeType.isPlusOnly && !SubscriptionHelper.hasActiveSubscription()
                 row(
                     title: themeType.description,
+                    identifier: "built_in_\(themeType.rawValue)",
                     lightColor: nil,
                     darkColor: nil,
                     accent: nil,
@@ -146,7 +149,7 @@ struct ThemeGalleryView: View {
         Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
     }
 
-    private func row(title: String, lightColor: String?, darkColor: String?, accent: String?, isSelected: Bool, isLocked: Bool, deletable: Bool, apply: @escaping () -> Void, delete: @escaping () -> Void) -> some View {
+    private func row(title: String, identifier: String, lightColor: String?, darkColor: String?, accent: String?, isSelected: Bool, isLocked: Bool, deletable: Bool, apply: @escaping () -> Void, delete: @escaping () -> Void) -> some View {
         Button(action: apply) {
             HStack(spacing: 12) {
                 ThemeSwatchView(
@@ -179,8 +182,9 @@ struct ThemeGalleryView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
-        .accessibilityValue(isSelected ? L10n.themeGalleryCurrent : "")
-        .accessibilityHint(isLocked ? L10n.accessibilityPlusOnly : "")
+        .accessibilityValue(isSelected ? Text(L10n.themeGalleryCurrent) : nil)
+        .accessibilityHint(isLocked ? Text(L10n.accessibilityPlusOnly) : nil)
+        .accessibilityIdentifier(identifier)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if deletable {
                 Button(role: .destructive) {
@@ -195,7 +199,6 @@ struct ThemeGalleryView: View {
     private func importTheme(result: Result<URL, Error>) {
         switch result {
         case .failure:
-            errorTitle = L10n.themeGalleryErrorTitle
             errorMessage = L10n.themeGalleryInvalidFile
         case .success(let url):
             let secured = url.startAccessingSecurityScopedResource()
@@ -206,7 +209,6 @@ struct ThemeGalleryView: View {
                 let data = try Data(contentsOf: url)
                 _ = try manager.importTheme(from: data)
             } catch {
-                errorTitle = L10n.themeGalleryErrorTitle
                 errorMessage = Self.message(for: error)
             }
         }

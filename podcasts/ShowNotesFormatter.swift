@@ -1,6 +1,7 @@
 
 import Foundation
 import PocketCastsUtils
+import SwiftSoup
 import UIKit
 
 class ShowNotesFormatter {
@@ -26,7 +27,8 @@ class ShowNotesFormatter {
             imageTag() +
             "</style>"
 
-        let cleanedShowNotes = removeHtml(string: showNotes)
+        let htmlFragment = removeHtml(string: showNotes)
+        let cleanedShowNotes = (try? SwiftSoup.clean(htmlFragment, Safelist.relaxed())) ?? ""
         styledShowNotes = styledShowNotes + "</head><body dir=\"auto\">"
         styledShowNotes = styledShowNotes + "\(cleanedShowNotes)</body></html>"
 

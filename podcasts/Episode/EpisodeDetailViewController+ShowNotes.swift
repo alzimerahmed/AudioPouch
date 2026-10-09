@@ -6,7 +6,9 @@ import WebKit
 
 extension EpisodeDetailViewController: WKNavigationDelegate, SFSafariViewControllerDelegate {
     func setupWebView() {
-        showNotesWebView = WKWebView()
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        showNotesWebView = WKWebView(frame: .zero, configuration: configuration)
 
         showNotesHolderView.insertSubview(showNotesWebView, belowSubview: loadingIndicator)
         showNotesWebView.translatesAutoresizingMaskIntoConstraints = false

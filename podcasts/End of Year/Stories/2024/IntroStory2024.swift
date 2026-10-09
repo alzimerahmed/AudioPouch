@@ -28,7 +28,7 @@ struct IntroStory2024: StoryView {
                 .background(
                     ZStack {
                         InfiniteScrollingView(spacing: -16) {
-                            Text("Playback".uppercased())
+                            Text(L10n.eoy2024IntroPlayback.uppercased())
                                 .font(.custom("Humane-Medium", fixedSize: 227))
                                 .frame(width: geometry.size.width)
                                 .multilineTextAlignment(.center)

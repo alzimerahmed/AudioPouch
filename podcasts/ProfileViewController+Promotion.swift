@@ -1,9 +1,10 @@
 import UIKit
 
 extension ProfileViewController: PromotionRedeemedDelegate {
-    func showPromotionViewController(promoCode: String?) {
+    func showPromotionViewController(promoCode: String?, requiresConfirmation: Bool = false) {
         let promoVC = PromotionViewController()
         promoVC.promoCode = promoCode
+        promoVC.requiresConfirmationBeforeRedeeming = requiresConfirmation
         promoVC.delegate = self
         present(SJUIUtils.popupNavController(for: promoVC), animated: true, completion: nil)
     }

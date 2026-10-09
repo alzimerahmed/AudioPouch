@@ -186,7 +186,6 @@
       "kind": "remoteSourceControl",
       "location": "https://github.com/Automattic/pocket-casts-ios-fingerprint",
       "state": {
-        "branch": "trunk",
         "revision": "88abde829e54002e8d3a9428c7f0acce8fd72304"
       }
     },
@@ -240,7 +239,6 @@
       "kind": "remoteSourceControl",
       "location": "https://github.com/danielebogo/Swime",
       "state": {
-        "branch": "master",
         "revision": "6a507c6480de4603bc5b6f178d4b1855b9c05a8c"
       }
     },

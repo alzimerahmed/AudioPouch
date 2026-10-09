@@ -31,12 +31,12 @@ struct DiscoverPodcastsGridView: View {
             }
             .padding(.horizontal, 20)
 
-            if podcasts.count > visibleCount {
+            if podcasts.count > visibleCount, let categoryName = category.name {
                 Button(action: {
-                    OnboardingFlow.shared.track(.recommendationsMoreTapped, properties: ["title": category.name ?? "Unknown", "number_visible": visibleCount])
+                    OnboardingFlow.shared.track(.recommendationsMoreTapped, properties: ["title": categoryName, "number_visible": visibleCount])
                     visibleCount = min(visibleCount + 6, podcasts.count)
                 }) {
-                    Text("More \(category.name ?? "Unknown")")
+                    Text(L10n.discoverMoreCategoryFormat(categoryName))
                         .textStyle(BorderButton())
                 }
                 .padding(.horizontal, 20)

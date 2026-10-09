@@ -1,18 +1,7 @@
 import XCTest
 @testable import PocketCastsServer
-import PocketCastsUtils
 
 class SyncProviderTests: XCTestCase {
-
-    override func setUp() {
-        super.setUp()
-        FeatureFlagOverrideStore().resetOverrides()
-    }
-
-    /// The syncProviderOptions flag ships default-off (prototype seam only).
-    func testSyncProviderOptionsFlagDefaultsOff() {
-        XCTAssertFalse(FeatureFlag.syncProviderOptions.enabled, "syncProviderOptions must default off")
-    }
 
     /// The upstream Pocket Casts provider is always present and is the default.
     func testDefaultProviderIsPocketCasts() {
@@ -26,13 +15,6 @@ class SyncProviderTests: XCTestCase {
     func testActiveProviderIsUpstreamWhenFlagOff() {
         let provider = SyncProviderRegistry.activeProvider
         XCTAssertEqual(provider.identifier, "pocketcasts")
-    }
-
-    /// With the flag on but only one provider registered, upstream is still used.
-    func testActiveProviderIsUpstreamWhenFlagOnWithSingleProvider() throws {
-        try FeatureFlagOverrideStore().override(FeatureFlag.syncProviderOptions, withValue: true)
-        XCTAssertTrue(FeatureFlag.syncProviderOptions.enabled)
-        XCTAssertEqual(SyncProviderRegistry.activeProvider.identifier, "pocketcasts")
     }
 
     /// An unconfigured upstream provider reports itself as such and refuses to sync.
@@ -83,6 +65,5 @@ class SyncProviderTests: XCTestCase {
     override func tearDown() {
         super.tearDown()
         ServerSettings.setSyncingEmail(email: nil)
-        FeatureFlagOverrideStore().resetOverrides()
     }
 }

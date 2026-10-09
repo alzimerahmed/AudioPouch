@@ -71,7 +71,9 @@ class ShowNotesPlayerItemViewController: PlayerItemViewController, @preconcurren
     }
 
     private func setupWebView() {
-        showNotesWebView = WKWebView(frame: showNotesHolderView.bounds)
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        showNotesWebView = WKWebView(frame: showNotesHolderView.bounds, configuration: configuration)
 
         showNotesWebView.translatesAutoresizingMaskIntoConstraints = false
         showNotesHolderView.addSubview(showNotesWebView)

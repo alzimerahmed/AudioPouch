@@ -20,11 +20,11 @@ struct EndOfYearCard: View {
                 VStack(alignment: .leading, spacing: Constants.textSpace) {
                     Text(viewModel.title)
                         .minimumScaleFactor(0.7)
-                        .font(size: 18, style: .title2, weight: .semibold, maxSizeCategory: .extraExtraLarge)
+                        .font(size: 18, style: .title2, weight: .semibold, maxSizeCategory: .accessibility2)
                         .foregroundColor(.white)
 
                     Text(viewModel.description)
-                        .font(size: 12, style: .footnote, weight: .semibold, maxSizeCategory: .accessibilityMedium)
+                        .font(size: 12, style: .footnote, weight: .semibold, maxSizeCategory: .accessibility2)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
                 }

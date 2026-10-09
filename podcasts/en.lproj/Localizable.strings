@@ -484,6 +484,9 @@
 /* Title for the section that allows the user to explore different podcast categories. */
 "discover_browse_by_category" = "Browse By Category";
 
+/* Format for the button showing more podcasts in a discover category. */
+"discover_more_category_format" = "More %@";
+
 /* Title for the podcast category Arts */
 "discover_browse_by_category_art" = "Arts";
 
@@ -1201,6 +1204,15 @@
 /* Description for importing opml from URL*/
 "import_opml_from_url" = "Import your podcasts from an OPML file using a URL";
 
+/* VoiceOver label for the URL field used to import an OPML subscription list. */
+"import_opml_url_field_accessibility_label" = "Podcast list URL";
+
+/* Confirmation title shown before importing an OPML subscription list opened from a link. */
+"import_opml_confirm_title" = "Import this list?";
+
+/* Confirmation message shown before importing an OPML subscription list opened from a link. */
+"import_opml_confirm_message" = "This will add the podcasts in this file to your library.";
+
 /* Description for importing opml from a local file*/
 "import_opml_from_file" = "Import your podcasts from an OPML file saved on this device";
 
@@ -1791,6 +1803,15 @@
 
 /* Error message informing the user the promotion code has already been used */
 "plus_promotion_used" = "Code already used";
+
+/* Confirmation title shown before redeeming a promo code opened from a link. */
+"plus_promotion_redeem_confirm_title" = "Redeem this code?";
+
+/* Confirmation message shown before redeeming a promo code opened from a link. */
+"plus_promotion_redeem_confirm_message" = "This will apply the promotion code to your account.";
+
+/* Confirmation action to redeem a promo code opened from a link. */
+"plus_promotion_redeem_confirm_action" = "Redeem";
 
 /* Title for the screen to allow the user to choose between a monthly or yearly subscription. */
 "plus_select_payment_frequency" = "Select Payment Frequency";
@@ -3358,6 +3379,9 @@
 /* Accessibility message for the cell displaying the time for how long they've listened to AudioPouch. '%1$@' is a placeholder for how long they've listened and '%2$@' is a placeholder for a localized funny stat related to their listening history. */
 "stats_accessibility_listen_history_format" = "You've listened for %1$@. %2$@";
 
+/* VoiceOver label combining a time-saved statistic and its value. */
+"stats_time_saved_row_accessibility_format" = "%1$@, %2$@";
+
 /* Row header that displays the amount of time saved from Auto skipping episode parts. */
 "stats_auto_skip" = "Auto Skipping";
 
@@ -4273,6 +4297,9 @@
 
 /* Description shown on the final End of Year story for 2024 */
 "eoy_2024_epilogue_description" = "Don’t forget to share with friends and give a shout out to your favourite podcasts and creators.";
+
+/* Scrolling title displayed in the 2024 year-in-review intro story. Keep concise to fit the animation. */
+"eoy_2024_intro_playback" = "Playback";
 
 /* Message of an alert displayed to the user asking if they want to share the current story */
 "eoy_share_this_story_message" = "Paste this image to your socials and give a shout out to your favorite shows and creators";

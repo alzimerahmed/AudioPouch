@@ -76,9 +76,11 @@ class ProfileViewController: PCViewController, UITableViewDataSource, UITableVie
         }
     }
 
+    var promoCodeRequiresConfirmation = false
+
     var promoCode: String? {
         didSet {
-            showPromotionViewController(promoCode: promoCode)
+            showPromotionViewController(promoCode: promoCode, requiresConfirmation: promoCodeRequiresConfirmation)
         }
     }
 

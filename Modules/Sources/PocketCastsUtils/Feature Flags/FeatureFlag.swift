@@ -264,10 +264,6 @@ public enum FeatureFlag: String, CaseIterable {
     /// immediately, server sync becomes opportunistic, and no account is required
     case offlineStats
 
-    /// Expose the sync-provider abstraction (ADR-005): allows alternative sync
-    /// backends (upstream Pocket Casts, gPodder/Nextcloud, self-hosted) behind a
-    /// single seam. Prototype only — no alternative provider ships yet.
-    case syncProviderOptions
 
     public var enabled: Bool {
         if let overriddenValue = FeatureFlagOverrideStore().overriddenValue(for: self) {
@@ -453,8 +449,6 @@ public enum FeatureFlag: String, CaseIterable {
             true
         case .offlineStats:
             true
-        case .syncProviderOptions:
-            false
         }
     }
 

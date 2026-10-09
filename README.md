@@ -1,15 +1,16 @@
-# AudioPouch — a powerful open-source podcast app for iOS
+# AudioPouch — an account-optional podcast app for Apple platforms
 
 <div align="center">
 
-[![platform](https://img.shields.io/badge/platform-ios%20%7C%20watchos-lightgrey?logo=apple)](https://github.com/alzimerahmed/AudioPouch)
-[![Swift](https://img.shields.io/badge/language-Swift-orange?logo=swift)](https://github.com/alzimerahmed/AudioPouch)
-[![license](https://img.shields.io/badge/license-MPL--2.0-black)](https://github.com/alzimerahmed/AudioPouch/blob/main/LICENSE.md)
-[![Xcode](https://img.shields.io/badge/Xcode-v27.0%2B-informational?logo=xcode)](https://github.com/alzimerahmed/AudioPouch)
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20watchOS%20%7C%20tvOS-lightgrey?logo=apple)](https://github.com/alzimerahmed/AudioPouch)
+[![Language](https://img.shields.io/badge/language-Swift-orange?logo=swift)](https://github.com/alzimerahmed/AudioPouch)
+[![UI](https://img.shields.io/badge/UI-UIKit%20%2B%20SwiftUI-blue)](https://github.com/alzimerahmed/AudioPouch)
+[![License](https://img.shields.io/badge/license-MPL--2.0-black)](LICENSE.md)
+[![CI](https://github.com/alzimerahmed/AudioPouch/actions/workflows/ci.yml/badge.svg)](https://github.com/alzimerahmed/AudioPouch/actions/workflows/ci.yml)
 
-*A podcast app by listeners, for listeners — forked from Pocket Casts iOS and built in the open.*
+*AudioPouch is an open-source podcast player for listeners who want local playback and account-free onboarding, with optional sync when they need it.*
 
-[Features](#features) • [Tech Stack](#tech-stack) • [Building](#quick-start--building)
+[Features](#features) • [Building](#quick-start--building) • [Usage](#usage) • [Contributing](#contributing)
 
 </div>
 
@@ -17,66 +18,81 @@
 
 ## Features
 
-- Full podcast player with playback effects (speed, trim silence, volume boost)
-- Up Next queue with automatic reordering and episode priorities
-- Filters, playlists, starred episodes, and listening history
-- Discover catalogue, podcast subscriptions, and episode downloads
-- Chapters, bookmarks, transcripts, and clips
-- Apple Watch app, widgets, Siri shortcuts, CarPlay, and Share/Notification extensions
-- Cloud sync across devices
+- Playback speed, trim silence, volume boost, chapters, bookmarks, and transcripts
+- Up Next queue, filters, playlists, listening history, and downloads
+- Podcast discovery, subscriptions, and OPML import
+- Account-free onboarding and local-first listening statistics
+- Custom light and dark themes with contrast validation
+- Apple Watch app, widgets, Siri shortcuts, CarPlay, and share extensions
+- Optional account sync across devices
 
 ## Screenshots
 
-Coming soon — will be added as the app ships TestFlight builds.
+Screenshots will be added after the first public iOS build is available.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Language | Swift (UIKit + SwiftUI hybrid) |
-| Platform | iOS, Apple Watch, widgets, extensions |
-| Architecture | Feature modules as local Swift packages (`Modules/`) |
-| Audio | Custom playback engine (`EffectsPlayer`, `DownloadManager`) |
-| Analytics | Local-first, pluggable adapters |
-| CI | GitHub Actions (macOS runners) |
+| Language | Swift 5 |
+| Platforms | iOS, watchOS, tvOS, App Clip, and app extensions |
+| UI | UIKit and SwiftUI |
+| Architecture | Local Swift packages in `Modules/` |
+| Data | FMDB and GRDB-backed local storage, with optional server sync |
+| Build and tests | Xcode, XCTest, SwiftLint, and GitHub Actions on macOS |
 | License | MPL-2.0 |
 
 ## Project Structure
 
-```
-├── podcasts/                  # Main iOS app target
-├── Modules/                   # Local Swift packages (data, server, analytics, utils)
-├── PocketCastsTests/          # Test targets
-├── NotificationContent/       # Notification content extension
-├── NotificationExtension/     # Notification service extension
-├── Share Extension/           # Share extension
-├── WidgetExtension/           # Home-screen widgets
-├── Pocket Casts Watch App/    # watchOS app
-├── Pocket Casts TV App/       # tvOS app
-├── Pocket Casts App Clip/     # App clip
-├── PodcastsIntents(UI)/       # Siri intents
-├── fastlane/                  # Release automation
-└── scripts/                   # Build helper scripts
+```text
+├── podcasts/                    # Main iOS app and resources
+├── Modules/                     # Shared local Swift packages and tests
+├── PocketCastsTests/             # App-level XCTest suite
+├── NotificationContent/         # Notification content extension
+├── NotificationExtension/       # Notification service extension
+├── Share Extension/             # Share extension
+├── WidgetExtension/             # Home-screen widgets
+├── Pocket Casts Watch App/       # watchOS app
+├── Pocket Casts TV App/          # tvOS app
+├── Pocket Casts App Clip/        # App Clip
+├── PodcastsIntents(UI)/          # Siri intents
+├── fastlane/                     # Release automation and store metadata
+└── scripts/                      # Build and contributor helpers
 ```
 
 ## Quick Start / Building
 
-1. Install dependencies: `gem install bundler && make install_dependencies`
-2. External contributors: run `make external_contributor`
-3. Open `podcasts.xcodeproj` in Xcode and run the `podcasts` scheme
+AudioPouch is developed on macOS with Xcode. Builds and tests run in GitHub Actions; local builds are not supported from this Windows workspace.
 
-> Note: the project is developed on macOS with Xcode; all automated builds and tests run in GitHub Actions.
+1. Install the repository dependencies: `make install_dependencies`
+2. For an external-contributor configuration, run: `make external_contributor`
+3. Open `podcasts.xcodeproj` in Xcode and run the `pocketcasts` scheme.
+
+## Usage
+
+Open the Podcasts tab to browse or subscribe to a show. Add episodes to Up Next, download them for offline listening, or import an OPML subscription list from onboarding or Settings. An account is optional; signing in enables server sync.
+
+## FAQ / Troubleshooting
+
+**Can I build the app on Windows?** No. Xcode and the Apple SDKs are required. Pull requests are built and tested by the macOS GitHub Actions workflow.
+
+**Do I need an account to listen?** No. Local subscriptions, playback, and listening history work without signing in; account sync is optional.
 
 ## Contributing
 
-Fork the repo, create a branch, and open a PR — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Fork the repository, create a focused branch, and open a pull request against `main`. Follow the Swift conventions in `AGENTS.md`; include XCTest coverage for behavior changes and wait for the required GitHub Actions checks before merging.
 
 ## Roadmap
 
-- [ ] Full AudioPouch rebrand (UI strings, bundle IDs, assets)
-- [ ] CI test gates on GitHub Actions
-- [ ] Feature pipeline from the competitive analysis
+- [x] Account-free onboarding and local-first listening statistics
+- [x] Privacy-first local analytics and expanded theme support
+- [ ] Complete AudioPouch bundle, signing, and distribution identity
+- [ ] Verify and publish the first signed iOS release
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for the history inherited from upstream.
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
+## License
+
+AudioPouch is distributed under the Mozilla Public License 2.0. See [LICENSE.md](LICENSE.md). The project preserves its Pocket Casts upstream attribution and history.
