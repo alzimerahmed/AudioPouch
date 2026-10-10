@@ -182,8 +182,8 @@ struct ThemeGalleryView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
-        .accessibilityValue(isSelected ? Text(L10n.themeGalleryCurrent) : nil)
-        .accessibilityHint(isLocked ? Text(L10n.accessibilityPlusOnly) : nil)
+        .optionalAccessibilityValue(isSelected ? Text(L10n.themeGalleryCurrent) : nil)
+        .optionalAccessibilityHint(isLocked ? Text(L10n.accessibilityPlusOnly) : nil)
         .accessibilityIdentifier(identifier)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if deletable {
@@ -233,6 +233,30 @@ struct ThemeGalleryView: View {
 
     private static func color(_ hex: String?, fallback: UIColor) -> Color {
         Color(uiColor: hex.flatMap { CustomThemeManager.color(fromHex: $0) } ?? fallback)
+    }
+}
+
+private extension View {
+    /// Applies `accessibilityValue` only when a value is provided, so unset
+    /// rows have no value rather than an empty string.
+    @ViewBuilder
+    func optionalAccessibilityValue(_ value: Text?) -> some View {
+        if let value {
+            accessibilityValue(value)
+        } else {
+            self
+        }
+    }
+
+    /// Applies `accessibilityHint` only when a hint is provided, so unset
+    /// rows have no hint rather than an empty string.
+    @ViewBuilder
+    func optionalAccessibilityHint(_ hint: Text?) -> some View {
+        if let hint {
+            accessibilityHint(hint)
+        } else {
+            self
+        }
     }
 }
 
