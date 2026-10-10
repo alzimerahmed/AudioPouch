@@ -11,11 +11,10 @@ public extension String {
 
     /// Prevents widows and orphans by applying a non-breaking space between the final words.
     func preventWidows() -> String {
-        let returnText = self
-        let components = returnText.components(separatedBy: Constants.space)
+        let components = self.components(separatedBy: Constants.space)
 
         guard components.count > 1 else {
-            return returnText
+            return self
         }
 
         let count = components.count - 1
