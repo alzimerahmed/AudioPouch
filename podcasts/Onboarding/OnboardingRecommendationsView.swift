@@ -131,11 +131,13 @@ struct OnboardingRecommendationsView: View {
                                 }
                                 ForEach(viewModel.categories, id: \.id) { category in
                                     VStack(alignment: .leading, spacing: 16) {
-                                        Text(category.name ?? "Unknown")
-                                            .font(.title2.weight(.bold))
-                                            .foregroundStyle(theme.primaryText01)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(.horizontal, 20)
+                                        if let categoryName = category.name {
+                                            Text(categoryName)
+                                                .font(.title2.weight(.bold))
+                                                .foregroundStyle(theme.primaryText01)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .padding(.horizontal, 20)
+                                        }
                                         DiscoverPodcastsGridView(
                                             category: category,
                                             podcasts: viewModel.categoryPodcasts[category.id ?? 0] ?? []
@@ -164,6 +166,7 @@ struct OnboardingRecommendationsView: View {
                                 .textStyle(RoundedButton())
                         }
                         .padding(.horizontal)
+                        .accessibilityIdentifier("recommendations_continue")
                         .padding(.top, 2)
                         .padding(.bottom)
                     }
@@ -270,7 +273,7 @@ struct OnboardingRecommendationsView: View {
             Analytics.track(.recommendationsImportTapped)
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "square.and.arrow.down.on.square")
+                Image(systemName: "square.and.arrow.down")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 28, height: 28)
@@ -299,11 +302,12 @@ struct OnboardingRecommendationsView: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 20)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("onboarding_import_banner")
     }
 
     @ViewBuilder func searchBar() -> some View {
         PCSearchView(searchTerm: $searchTerm, shouldShowCancelButton: true)
-            .frame(height: PCSearchView.defaultHeight)
+            .frame(minHeight: PCSearchView.defaultHeight)
     }
 
     @ViewBuilder func podcastList() -> some View {

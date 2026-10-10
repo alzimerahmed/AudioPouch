@@ -32,7 +32,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0"),
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.0.0"),
-        .package(url: "https://github.com/danielebogo/Swime", branch: "master"),
+        .package(url: "https://github.com/danielebogo/Swime", revision: "6a507c6480de4603bc5b6f178d4b1855b9c05a8c"),
         .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.4.0"),
         .package(url: "https://github.com/ra1028/DifferenceKit", from: "1.2.0"),
         .package(url: "https://github.com/krisk/fuse-swift", from: "1.4.0"),
@@ -44,7 +44,7 @@ let package = Package(
         .package(url: "https://github.com/dagronf/SwiftSubtitles", from: "1.8.3"),
         .package(url: "https://github.com/Automattic/google-cast", from: "1.0.1"),
         .package(url: "https://github.com/ksemianov/WrappingHStack", from: "0.2.0"),
-        .package(url: "https://github.com/Automattic/pocket-casts-ios-fingerprint", branch: "trunk"),
+        .package(url: "https://github.com/Automattic/pocket-casts-ios-fingerprint", revision: "88abde829e54002e8d3a9428c7f0acce8fd72304"),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.7.0"),
     ],
     targets: XcodeSupport.targets + [
@@ -201,6 +201,7 @@ enum XcodeSupport {
                     .product(name: "Agrume", package: "Agrume"),
                     .product(name: "JLRoutes", package: "JLRoutes"),
                     .product(name: "Kingfisher", package: "Kingfisher"),
+                    .product(name: "SwiftSoup", package: "SwiftSoup"),
                     .product(name: "SwiftSubtitles", package: "SwiftSubtitles"),
                     .product(name: "GoogleCast", package: "google-cast"),
                     .product(name: "WrappingHStack", package: "WrappingHStack"),

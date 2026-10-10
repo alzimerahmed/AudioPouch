@@ -167,6 +167,8 @@ class StatsViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 castCell.statValue.text = formatStat(autoSkipStat())
             }
             castCell.statValue.style = .primaryText02
+            castCell.isAccessibilityElement = true
+            castCell.accessibilityLabel = L10n.statsTimeSavedRowAccessibilityFormat(castCell.statName.text ?? "", castCell.statValue.text ?? "")
             return castCell
         case .timeSavedTotal:
             let castCell = tableView.dequeueReusableCell(withIdentifier: statsCellId, for: indexPath) as! StatsCell
@@ -174,6 +176,8 @@ class StatsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             castCell.statValue.text = formatStat(skippedStat() + variableSpeedStat() + silenceRemovedStat() + autoSkipStat())
             castCell.statValue.style = .support01
             castCell.hideIcon()
+            castCell.isAccessibilityElement = true
+            castCell.accessibilityLabel = L10n.statsTimeSavedRowAccessibilityFormat(castCell.statName.text ?? "", castCell.statValue.text ?? "")
             return castCell
         }
     }
@@ -205,39 +209,25 @@ class StatsViewController: UIViewController, UITableViewDelegate, UITableViewDat
             return
         }
 
-        if FeatureFlag.offlineStats.enabled {
+        let showLocalStats = FeatureFlag.offlineStats.enabled
+        if showLocalStats {
             // Offline stats (gap #7): local stats (UserDefaults-backed via
             // StatsManager) are always available, so show them immediately
             // instead of a spinner. The server sync becomes opportunistic —
             // if it succeeds the values refresh, if it fails we keep showing
             // the local data rather than an error state.
             loadingState = LoadingStatus.loaded
-            reloadSections()
-
-            StatsManager.shared.loadRemoteStats { [weak self] _ in
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    self.reloadSections()
-                    self.requestReviewIfPossible()
-                }
-
-                RefreshManager.shared.refreshPodcasts { _ in
-                    DispatchQueue.main.async { [weak self] in
-                        self?.reloadSections()
-                    }
-                }
-            }
-
-            return
+        } else {
+            loadingState = LoadingStatus.loading
         }
-
-        loadingState = LoadingStatus.loading
         reloadSections()
 
         StatsManager.shared.loadRemoteStats { [weak self] success in
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
-                self.loadingState = success ? .loaded : .failed
+                if !showLocalStats {
+                    self.loadingState = success ? .loaded : .failed
+                }
                 self.reloadSections()
                 self.requestReviewIfPossible()
             }

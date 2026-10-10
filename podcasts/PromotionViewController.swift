@@ -63,6 +63,7 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
     }
 
     var promoCode: String?
+    var requiresConfirmationBeforeRedeeming = false
     var serverMessage: String?
     var userDidSignIn = false
     enum PromoStatusType: Int { case validating = 0, codeExpired, codeInvalid, existingPlusUser, signIn, codeReused }
@@ -75,6 +76,8 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
     private var userLoginNotification: NSObjectProtocol? = nil
 
+    private var pendingRedeemConfirmation = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -82,7 +85,11 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
         if let code = promoCode, !code.isEmpty {
             if SyncManager.isUserLoggedIn() {
-                redeemCode()
+                if requiresConfirmationBeforeRedeeming {
+                    pendingRedeemConfirmation = true
+                } else {
+                    redeemCode()
+                }
             } else {
                 ValidatePromoCodeTask.validatePromoCode(promoCode: code, completion: { isValid, successMessage, error in
                     self.serverMessage = error?.localizedDescription ?? successMessage
@@ -118,6 +125,10 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
+        if pendingRedeemConfirmation {
+            pendingRedeemConfirmation = false
+            showRedeemConfirmation()
+        }
         if userDidSignIn {
             redeemAfterSignIn()
             userDidSignIn = false
@@ -227,10 +238,31 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
     private func processValidCode() {
         if SyncManager.isUserLoggedIn() {
-            redeemCode()
+            if requiresConfirmationBeforeRedeeming {
+                showRedeemConfirmation()
+            } else {
+                redeemCode()
+            }
         } else {
             promoStatus = .signIn
         }
+    }
+
+    /// Deep-linked promo codes redeem a server-side account change, so require
+    /// explicit confirmation before the request is sent.
+    private func showRedeemConfirmation() {
+        let alert = UIAlertController(
+            title: L10n.plusPromotionRedeemConfirmTitle,
+            message: L10n.plusPromotionRedeemConfirmMessage,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: L10n.plusPromotionRedeemConfirmAction, style: .default) { [weak self] _ in
+            self?.redeemCode()
+        })
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+        present(alert, animated: true)
     }
 
     private func redeemCode() { // called for signed in users only
@@ -342,6 +374,8 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
     private func redeemAfterSignIn() {
         if promoStatus == .codeInvalid || promoStatus == .codeExpired || promoStatus == .codeReused {
             dismiss(animated: true, completion: nil)
+        } else if requiresConfirmationBeforeRedeeming {
+            showRedeemConfirmation()
         } else {
             promoStatus = .validating
             redeemCode()

@@ -139,10 +139,11 @@ struct IntroCarouselView: View {
                         coordinator.skipOnboarding()
                     }
                     .foregroundColor(theme.primaryText02)
-                    .applyButtonFont(maxContentSizeCategory: .accessibilityMedium)
+                    .applyButtonFont(maxContentSizeCategory: .accessibilityExtraExtraExtraLarge)
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
                     .accessibilityHint(L10n.onboardingSkipHint)
+                    .accessibilityIdentifier("onboarding_skip")
                 }
             }
             .padding(.horizontal, 15)

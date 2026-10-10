@@ -52,11 +52,20 @@ extension AppDelegate {
             if isSupported {
                 progressDialog = ShiftyLoadingAlert(title: L10n.opmlImporting)
                 rootViewController.dismiss(animated: false, completion: nil)
-                progressDialog?.showAlert(rootViewController, hasProgress: false, completion: { [weak self] in
-                    if let progressDialog = self?.progressDialog {
-                        PodcastManager.shared.importPodcastsFromOpml(url, progressWindow: progressDialog)
-                    }
+
+                // Subscribing to a whole subscription list changes library state,
+                // so confirm before importing when this arrives from outside the app.
+                let alert = UIAlertController(title: L10n.importOpmlConfirmTitle, message: L10n.importOpmlConfirmMessage, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: L10n.import, style: .default) { [weak self] _ in
+                    guard let self else { return }
+                    self.progressDialog?.showAlert(rootViewController, hasProgress: false, completion: { [weak self] in
+                        if let progressDialog = self?.progressDialog {
+                            PodcastManager.shared.importPodcastsFromOpml(url, progressWindow: progressDialog)
+                        }
+                    })
                 })
+                alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+                rootViewController.present(alert, animated: true)
             } else if type.conforms(to: .audio) || type.conforms(to: .movie) {
                 NavigationManager.shared.navigateTo(NavigationManager.uploadedPageKey, data: [NavigationManager.uploadFileKey: url])
             }
@@ -120,12 +129,10 @@ extension AppDelegate {
 
         // share list page opened
         JLRoutes.global().addRoute("/sharelist/*") { parameters -> Bool in
-            guard let pathComponents = parameters[JLRouteWildcardComponentsKey] as? [String] else { return false }
+            guard let pathComponents = parameters[JLRouteWildcardComponentsKey] as? [String], !pathComponents.isEmpty else { return false }
 
             let sharePath = pathComponents.joined(separator: "/")
-
-            let jsonFileLocation = "http://\(sharePath).json"
-            let listController = IncomingShareListViewController(jsonLocation: jsonFileLocation)
+            let listController = IncomingShareListViewController(jsonLocation: "https://\(sharePath).json")
             let navController = SJUIUtils.popupNavController(for: listController)
 
             SceneHelper.rootViewController()?.present(navController, animated: true, completion: nil)
@@ -184,7 +191,7 @@ extension AppDelegate {
 
             let feedUrl = subscribeUrl.replacingOccurrences(of: prefix, with: "")
 
-            let searchTerm = !feedUrl.hasPrefix("http://") && !feedUrl.hasPrefix("https://") ? "http://\(feedUrl)" : feedUrl
+            let searchTerm = feedUrl.hasPrefix("http://") || feedUrl.hasPrefix("https://") ? feedUrl : "https://\(feedUrl)"
 
             strongSelf.progressDialog = ShiftyLoadingAlert(title: L10n.podcastLoading)
             rootController.dismiss(animated: false, completion: nil)
@@ -304,7 +311,13 @@ extension AppDelegate {
                 promoCode = pathComponents[0]
             }
 
-            NavigationManager.shared.navigateTo(NavigationManager.showPromotionPageKey, data: [NavigationManager.promotionInfoKey: promoCode as Any])
+            NavigationManager.shared.navigateTo(
+                NavigationManager.showPromotionPageKey,
+                data: [
+                    NavigationManager.promotionInfoKey: promoCode as Any,
+                    NavigationManager.promotionConfirmationRequiredKey: true
+                ]
+            )
             return true
         }
 

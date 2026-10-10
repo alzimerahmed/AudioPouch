@@ -35,7 +35,7 @@ protocol NavigationProtocol: AnyObject {
     func showPlusMarketingPage()
     func showSettings(row: SettingsViewController.TableRow?)
     func showSettingsAppearance(showThemeSelection: Bool)
-    func showPromotionPage(promoCode: String?)
+    func showPromotionPage(promoCode: String?, requiresConfirmation: Bool)
     func showPromotionFinishedAcknowledge()
     func showHeadphoneSettings()
     func showGeneralSettings(row: GeneralSettingsViewController.TableRow?)

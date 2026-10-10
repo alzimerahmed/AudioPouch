@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import PocketCastsServer
 import EndOfYear
 
@@ -171,8 +172,14 @@ struct StoriesView: View {
         .onAppear {
             Analytics.track(.endOfYearStoriesFailedToLoad, properties: ["current_year": EndOfYear.currentYear.literalValue])
             if EndOfYear.currentYear == .y2025 {
-                model.stopAndDismiss()
-                Toast.show(L10n.playback2025FailedToLoad)
+                let message = L10n.playback2025FailedToLoad
+                if UIAccessibility.isVoiceOverRunning {
+                    model.stopAndDismiss()
+                    UIAccessibility.post(notification: .announcement, argument: message)
+                } else {
+                    Toast.show(message)
+                    model.stopAndDismiss()
+                }
             }
         }
     }

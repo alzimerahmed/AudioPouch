@@ -12,7 +12,7 @@ struct ImportDetailsView: View {
     @Environment(\.presentationMode) var presentationMode
 
     @State var opmlURLText = ""
-    @State var opmlURLImportResult: OPMLImportResult = .none
+    @State var opmlImportResult: OPMLImportResult = .none
     @State var opmlImportInProgress: Bool = false
     @State var showOpmlFileImporter = false
     @State var observerTokens: [NSObjectProtocol] = []
@@ -92,8 +92,8 @@ struct ImportDetailsView: View {
     /// Result/progress display shared by the URL and file import paths.
     @ViewBuilder
     private var importResultView: some View {
-        switch opmlURLImportResult {
-        case .none: Text("")
+        switch opmlImportResult {
+        case .none: EmptyView()
         case .success:
             Text(L10n.opmlImportSucceededTitle)
                 .foregroundColor((ThemeColor.support02(for: theme.activeTheme).color))
@@ -112,19 +112,18 @@ struct ImportDetailsView: View {
         VStack {
             TextField("https://...", text: $opmlURLText)
                 .autocapitalization(.none)
-                .requiredStyle(opmlURLImportResult == .failure)
+                .requiredStyle(opmlImportResult == .failure)
                 .keyboardType(.URL)
+                .accessibilityLabel(L10n.importOpmlUrlFieldAccessibilityLabel)
+                .accessibilityIdentifier("import_opml_url")
 
             importResultView
         }
     }
 
     /// Result/progress display for the local OPML file import.
-    @ViewBuilder
     private var fileImportView: some View {
-        VStack {
-            importResultView
-        }
+        importResultView
     }
 
     private func dismissSelf() {
@@ -137,29 +136,30 @@ struct ImportDetailsView: View {
 
     private var fileImportButton: some View {
         Button(action: {
-            if opmlURLImportResult == .success {
+            if opmlImportResult == .success {
                 dismissSelf()
                 return
             }
             showOpmlFileImporter = true
         }, label: {
-            Text(opmlURLImportResult == .success ? L10n.done : L10n.importOpmlChooseFile)
+            Text(opmlImportResult == .success ? L10n.done : L10n.importOpmlChooseFile)
         })
         .buttonStyle(RoundedButtonStyle(theme: theme))
         .padding([.leading, .trailing], Constants.horizontalPadding)
+        .accessibilityIdentifier("import_opml_file")
         .fileImporter(isPresented: $showOpmlFileImporter, allowedContentTypes: Self.opmlContentTypes) { result in
             switch result {
             case .success(let url):
-                opmlURLImportResult = .none
+                opmlImportResult = .none
                 opmlImportInProgress = true
                 viewModel.importFromFile(url) { success in
                     if !success {
-                        opmlURLImportResult = .failure
+                        opmlImportResult = .failure
                         opmlImportInProgress = false
                     }
                 }
             case .failure:
-                opmlURLImportResult = .failure
+                opmlImportResult = .failure
                 opmlImportInProgress = false
             }
         }
@@ -169,11 +169,11 @@ struct ImportDetailsView: View {
     /// Registered once in `.onAppear`; tokens removed in `.onDisappear`.
     private func observeOpmlImportNotifications() {
         observerTokens.append(NotificationCenter.default.addObserver(forName: podcasts.Constants.Notifications.opmlImportCompleted, object: nil, queue: nil) { _ in
-            opmlURLImportResult = .success
+            opmlImportResult = .success
             opmlImportInProgress = false
         })
         observerTokens.append(NotificationCenter.default.addObserver(forName: podcasts.Constants.Notifications.opmlImportFailed, object: nil, queue: nil) { _ in
-            opmlURLImportResult = .failure
+            opmlImportResult = .failure
             opmlImportInProgress = false
         })
     }
@@ -191,14 +191,14 @@ struct ImportDetailsView: View {
 
     private var opmlViewButton: some View {
         Button(action: {
-            if opmlURLImportResult == .success {
+            if opmlImportResult == .success {
                 dismissSelf()
                 return
             }
-            opmlURLImportResult = .none
+            opmlImportResult = .none
 
             guard let url = URL(string: opmlURLText) else {
-                opmlURLImportResult = .failure
+                opmlImportResult = .failure
                 opmlImportInProgress = false
                 return
             }
@@ -206,12 +206,12 @@ struct ImportDetailsView: View {
             opmlImportInProgress = true
             viewModel.importFromURL(url) { success in
                 if !success {
-                    opmlURLImportResult = .failure
+                    opmlImportResult = .failure
                     opmlImportInProgress = false
                 }
             }
         }, label: {
-            Text(opmlURLImportResult == .success ? L10n.done : L10n.import)
+            Text(opmlImportResult == .success ? L10n.done : L10n.import)
         })
         .buttonStyle(RoundedButtonStyle(theme: theme))
         .padding([.leading, .trailing], Constants.horizontalPadding)

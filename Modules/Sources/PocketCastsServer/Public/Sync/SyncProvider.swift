@@ -57,20 +57,17 @@ public final class PocketCastsSyncProvider: SyncProvider {
 
 /// Registry of available sync providers. Holds a shared provider instance so
 /// hooks installed on it (e.g. `syncTrigger`) survive between lookups.
-/// Future providers register here behind `FeatureFlag.syncProviderOptions`.
 public enum SyncProviderRegistry {
     /// Shared upstream provider instance.
     public private(set) static var defaultProvider: SyncProvider = PocketCastsSyncProvider()
 
-    /// All providers the build knows about. Only the upstream provider exists
-    /// today; future providers are added here behind `FeatureFlag.syncProviderOptions`.
+    /// Providers implemented by this build.
     public static var availableProviders: [SyncProvider] {
         [defaultProvider]
     }
 
-    /// The provider the app should use. While `syncProviderOptions` is off
-    /// (default), this always returns the upstream provider — behavior is
-    /// unchanged from before the seam existed.
+    /// The provider the app currently uses. Alternative providers are not
+    /// available until their implementations and selection flow are complete.
     public static var activeProvider: SyncProvider {
         defaultProvider
     }

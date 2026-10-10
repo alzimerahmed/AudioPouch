@@ -41,6 +41,7 @@ class NavigationManager {
     static let showPlusMarketingPageKey = "showPlusMarketingPage"
     static let showPromotionPageKey = "showPromotionPage"
     static let promotionInfoKey = "promotionInfoKey"
+    static let promotionConfirmationRequiredKey = "promotionConfirmationRequired"
     static let showPromotionFinishedPageKey = "showPromotionFinishedPage"
 
     static let supporterSignInKey = "supporterSignInKey"
@@ -215,7 +216,8 @@ class NavigationManager {
             if let data, let promoString = data[NavigationManager.promotionInfoKey] as? String {
                 promoCode = promoString
             }
-            mainController?.showPromotionPage(promoCode: promoCode)
+            let requiresConfirmation = data?[NavigationManager.promotionConfirmationRequiredKey] as? Bool ?? false
+            mainController?.showPromotionPage(promoCode: promoCode, requiresConfirmation: requiresConfirmation)
         } else if place == NavigationManager.showPromotionFinishedPageKey {
             mainController?.showPromotionFinishedAcknowledge()
         } else if place == NavigationManager.supporterSignInKey {

@@ -598,13 +598,14 @@ class MainTabBarController: UITabBarController, NavigationProtocol {
         showInSafariViewController(urlString: ServerConstants.Urls.plusInfo)
     }
 
-    func showPromotionPage(promoCode: String?) {
+    func showPromotionPage(promoCode: String?, requiresConfirmation: Bool) {
         switchToTab(.profile)
         if let navController = selectedViewController as? UINavigationController {
             navController.popToRootViewController(animated: false)
 
             if let profileVC = navController.topViewController as? ProfileViewController {
                 profileVC.presentedViewController?.dismiss(animated: true, completion: nil)
+                profileVC.promoCodeRequiresConfirmation = requiresConfirmation
                 profileVC.promoCode = promoCode
             }
         }
