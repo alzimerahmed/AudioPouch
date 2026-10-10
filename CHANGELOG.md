@@ -1,3 +1,13 @@
+1.0
+-----
+- First AudioPouch release, forked from Pocket Casts iOS
+- Harden show-notes rendering: HTML sanitized with SwiftSoup and JavaScript disabled in show-notes web views
+- Harden `pktc://` deep links: confirmation before promo-code redemption and OPML import
+- Accessibility: localized remaining hardcoded strings, accessibility labels and identifiers on onboarding, stats, theme gallery, and import screens; relaxed Dynamic Type caps
+- Pin branch-based Swift package dependencies (Swime, fingerprint) to exact revisions
+- Remove stale Firebase/Sentry release tooling and lanes
+- New AudioPouch app icon
+
 8.23
 -----
 - Remove the "Gift … of Pocket Casts Plus!" tooltip from the Profile tab [#5310](https://github.com/Automattic/pocket-casts-ios/pull/5310)

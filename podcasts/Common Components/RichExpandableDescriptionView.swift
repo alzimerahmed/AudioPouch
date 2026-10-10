@@ -1,4 +1,5 @@
 import UIKit
+import SwiftSoup
 @preconcurrency import WebKit
 
 class RichExpandableLabel: WKWebView {
@@ -81,7 +82,11 @@ class RichExpandableLabel: WKWebView {
 
     func setRichText(html: String) {
         originalHTML = html
-        let styledHTML = style(html: html)
+        // Podcast-supplied HTML is untrusted: strip scripts, event handlers,
+        // and unsafe elements before rendering. Our own head <script> helpers
+        // are unaffected since they are injected by style(html:) after cleaning.
+        let sanitizedHTML = (try? Whitelist.relaxed()).flatMap { try? SwiftSoup.clean(html, $0) } ?? ""
+        let styledHTML = style(html: sanitizedHTML)
         guard previousHTML != styledHTML else {
             if htmlReady {
                 heightChanged?(heightConstraint.constant.rounded(.up))

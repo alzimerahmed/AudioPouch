@@ -76,6 +76,8 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
     private var userLoginNotification: NSObjectProtocol? = nil
 
+    private var pendingRedeemConfirmation = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -84,7 +86,7 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
         if let code = promoCode, !code.isEmpty {
             if SyncManager.isUserLoggedIn() {
                 if requiresConfirmationBeforeRedeeming {
-                    showRedeemConfirmation()
+                    pendingRedeemConfirmation = true
                 } else {
                     redeemCode()
                 }
@@ -123,6 +125,10 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
+        if pendingRedeemConfirmation {
+            pendingRedeemConfirmation = false
+            showRedeemConfirmation()
+        }
         if userDidSignIn {
             redeemAfterSignIn()
             userDidSignIn = false
@@ -253,7 +259,9 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
         alert.addAction(UIAlertAction(title: L10n.plusPromotionRedeemConfirmAction, style: .default) { [weak self] _ in
             self?.redeemCode()
         })
-        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
         present(alert, animated: true)
     }
 
@@ -366,6 +374,8 @@ class PromotionViewController: UIViewController, SyncSigninDelegate, AccountUpda
     private func redeemAfterSignIn() {
         if promoStatus == .codeInvalid || promoStatus == .codeExpired || promoStatus == .codeReused {
             dismiss(animated: true, completion: nil)
+        } else if requiresConfirmationBeforeRedeeming {
+            showRedeemConfirmation()
         } else {
             promoStatus = .validating
             redeemCode()

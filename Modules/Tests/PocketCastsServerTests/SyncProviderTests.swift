@@ -10,9 +10,9 @@ class SyncProviderTests: XCTestCase {
         XCTAssertEqual(provider.displayName, "AudioPouch")
     }
 
-    /// With the flag off, the active provider is the upstream one regardless of
-    /// anything else — behavior is identical to before the seam existed.
-    func testActiveProviderIsUpstreamWhenFlagOff() {
+    /// The active provider is the upstream one regardless of anything else —
+    /// behavior is identical to before the seam existed.
+    func testActiveProviderIsUpstream() {
         let provider = SyncProviderRegistry.activeProvider
         XCTAssertEqual(provider.identifier, "pocketcasts")
     }

@@ -28,7 +28,7 @@ class ShowNotesFormatter {
             "</style>"
 
         let htmlFragment = removeHtml(string: showNotes)
-        let cleanedShowNotes = (try? SwiftSoup.clean(htmlFragment, Safelist.relaxed())) ?? ""
+        let cleanedShowNotes = (try? Whitelist.relaxed()).flatMap { try? SwiftSoup.clean(htmlFragment, $0) } ?? ""
         styledShowNotes = styledShowNotes + "</head><body dir=\"auto\">"
         styledShowNotes = styledShowNotes + "\(cleanedShowNotes)</body></html>"
 
