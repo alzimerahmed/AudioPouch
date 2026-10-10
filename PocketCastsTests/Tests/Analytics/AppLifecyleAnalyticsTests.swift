@@ -59,7 +59,7 @@ class AppLifecycleAnalyticsTests: XCTestCase {
     // MARK: - Application Updated
 
     func testApplicationUpdatedEventFiresWhenLaunched() throws {
-        let testVersion = "1.0"
+        let testVersion = "0.9.9"
         userDefaults.set(testVersion, forKey: Constants.UserDefaults.lastRunVersion)
 
         let expectation = expectation(description: "track method should be triggered")
@@ -103,7 +103,7 @@ class AppLifecycleAnalyticsTests: XCTestCase {
     }
 
     func testApplicationUpdatedEventFiresOnlyOnce() {
-        userDefaults.set("1.0", forKey: Constants.UserDefaults.lastRunVersion)
+        userDefaults.set("0.9.9", forKey: Constants.UserDefaults.lastRunVersion)
 
         let expectation = expectation(description: "track method should be triggered only once")
         expectation.expectedFulfillmentCount = 1
