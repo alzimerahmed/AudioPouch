@@ -29,7 +29,7 @@ struct EndOfYearModal: View {
                         NavigationManager.shared.navigateTo(NavigationManager.endOfYearStories, data: nil)
                     }
                 Text(model.description)
-                    .font(style: .callout, weight: .medium, maxSizeCategory: .accessibility2)
+                    .font(style: .callout, weight: .medium, maxSizeCategory: .accessibilityLarge)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
